@@ -95,14 +95,17 @@
     },
   };
 
-  const EXT = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif" };
+  const EXT = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif", "video/mp4": "mp4", "video/quicktime": "mov", "video/webm": "webm" };
+  const MAX_VIDEO = 50 * 1024 * 1024; // GitHub warns on files over 50 MB and refuses big uploads through the API
   const assets = {
     async upload(blob) {
       await owned();
-      const ext = EXT[blob.type]; if (!ext) throw Object.assign(new Error("Unsupported image type"), { code: "unsupported_type" });
-      if (blob.size > 20 * 1024 * 1024) throw Object.assign(new Error("Too large"), { code: "too_large" });
+      const ext = EXT[blob.type]; if (!ext) throw Object.assign(new Error("Unsupported file type"), { code: "unsupported_type" });
+      const video = blob.type.startsWith("video/");
+      if (blob.size > (video ? MAX_VIDEO : 20 * 1024 * 1024)) throw Object.assign(new Error("Too large"), { code: "too_large" });
+      if (video) notify("Uploading video… keep this tab open");
       const id = rid() + "." + ext, content = await blobB64(blob), cfg = getCfg();
-      await enqueue(() => gh(`contents/images/${id}`, { method: "PUT", body: JSON.stringify({ message: "Add photo " + id, content, branch: cfg.branch }) }));
+      await enqueue(() => gh(`contents/images/${id}`, { method: "PUT", body: JSON.stringify({ message: (video ? "Add video " : "Add photo ") + id, content, branch: cfg.branch }) }));
       window.__localImg[id] = URL.createObjectURL(blob);
       return { id, url: window.__localImg[id], sizeBytes: blob.size, contentType: blob.type };
     },

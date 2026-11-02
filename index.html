@@ -155,6 +155,13 @@ a { color: inherit }
 kbd { font: 600 12px var(--f-mono); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 3px 8px; background: var(--bg); justify-self: start }
 @media (max-width: 560px) { .nexttrips { grid-template-columns: 1fr } .nt.next { justify-content: flex-start; text-align: left; flex-direction: row-reverse } }
 @media (prefers-reduced-motion: reduce) { .pp-flip, .secnav, .toast, .lb .stage img { transition: none } .stamps .stamp.press { animation: none } }
+
+/* videos */
+.reel button, .strip button { position: relative }
+.reel video, .strip video { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; background: #000 }
+.vbadge { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: rgba(0,0,0,.55); color: #fff; font-size: 12px; pointer-events: none }
+.screen video.main { width: 100%; height: 100%; object-fit: contain; background: #000 }
+.lb .stage video { max-width: 100%; max-height: 100%; background: #000 }
 @media (max-width: 820px) { .cover:has(.herobg)::before { background: linear-gradient(180deg, rgba(236,235,231,.92), rgba(236,235,231,.72) 60%, rgba(236,235,231,.55)) } }
 .cover-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; color: var(--gold) }
 .cover-top .label { color: var(--accent) }
@@ -238,6 +245,9 @@ section.block { padding-block: 56px 8px }
 .routebox .node:hover .code, .routebox .node.on .code, .routebox .node:focus-visible .code { fill: var(--c) }
 .routebox .node:hover .num, .routebox .node.on .num, .routebox .node:focus-visible .num, .routebox .node.hit .num { opacity: 1 }
 .routebox .plane { fill: var(--accent); transition: opacity .4s }
+.routebox .ghost circle { fill: none; stroke: var(--muted); stroke-width: 2; stroke-dasharray: 3 3 }
+.routebox .ghost .code { fill: var(--muted); font-family: var(--f-display); font-size: 22px; opacity: .6 }
+.routebox .ghost .sub { fill: var(--muted); font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .1em }
 .routebox svg.small .node .code { font-size: 19px }
 .routebox svg.small .node .sub { font-size: 8.5px; letter-spacing: .04em }
 .rtip { position: absolute; z-index: 3; width: 230px; display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; align-items: center; padding: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 12px 28px rgba(26,29,31,.16); pointer-events: none }
@@ -395,7 +405,7 @@ footer .label { color: var(--muted) }
 </style>
 
 <div id="root"><div class="wrap" style="padding-block:40px"><div class="notice">Opening your passport…</div></div></div>
-<input type="file" id="file-in" accept="image/*" multiple hidden>
+<input type="file" id="file-in" accept="image/*,video/mp4,video/quicktime,video/webm,.mov,.mp4" multiple hidden>
 <input type="file" id="avatar-in" accept="image/*" hidden>
 <input type="file" id="bg-in" accept="image/*" hidden>
 <input type="file" id="banner-in" accept="image/*" hidden>
@@ -1032,7 +1042,10 @@ footer .label { color: var(--muted) }
 
   const byTime = (a, b) => (a.createdAt || 0) - (b.createdAt || 0);
   const photosOf = pid => state.photos.filter(p => p.placeId === pid).sort(byTime);
-  const coverOf = pl => { const l = photosOf(pl.id); return l.find(p => p.assetId === pl.coverAssetId) || l[0]; };
+  const isVid = ph => ph?.kind === "video" || /\.(mp4|mov|webm)$/i.test(ph?.assetId || "");
+  // Thumbnail for a photo or video: videos show their first frame with a play badge.
+  const thumb = ph => isVid(ph) ? `<video src="${src(ph.assetId)}#t=0.1" muted playsinline preload="metadata"></video><span class="vbadge" aria-hidden="true">▶</span>` : `<img src="${src(ph.assetId)}" alt="" loading="lazy">`;
+  const coverOf = pl => { const l = photosOf(pl.id); return l.find(p => p.assetId === pl.coverAssetId && !isVid(p)) || l.find(p => !isVid(p)); };
   const placeId = () => decodeURIComponent((location.hash || "").slice(1));
   const ageOf = dob => {
     const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dob || ""); if (!m) return null;
@@ -1138,7 +1151,7 @@ footer .label { color: var(--muted) }
     </main>
     <footer class="wrap"><div class="label">${esc(name)} · ${plural(state.places.length, "stamp")} collected</div></footer>
     <nav class="secnav" id="secnav" aria-label="Sections"><div class="secnav-in">
-      <button data-act="goto" data-to="top">Passport</button>${state.places.length > 1 ? `<button data-act="goto" data-to="route-sec">Route</button>` : ""}<button data-act="goto" data-to="stamps">Stamps</button>${state.photos.length >= 3 ? `<button data-act="goto" data-to="recent-sec">Film</button>` : ""}
+      <button data-act="goto" data-to="top">Passport</button><button data-act="goto" data-to="route-sec">Route</button><button data-act="goto" data-to="stamps">Stamps</button>${state.photos.length >= 3 ? `<button data-act="goto" data-to="recent-sec">Film</button>` : ""}
       ${state.places.length > 1 ? `<button data-act="surprise" class="sn-cta">🎲 Surprise me</button>` : ""}</div></nav>
     <button class="totop" id="totop" data-act="goto" data-to="top" aria-label="Back to top" hidden>↑</button>`;
   }
@@ -1159,12 +1172,11 @@ footer .label { color: var(--muted) }
 
   function routeSection() {
     const trips = tripOrder();
-    if (trips.length < 2) return "";
     const countries = new Set(trips.map(t => (t.country || "").trim().toLowerCase()).filter(Boolean)).size;
     return `<section class="block" id="route-sec">
-      <div class="sec-head"><div><div class="label">Flight log</div><h2>The route so far</h2><p>Every trip in order. Hover a stop for a preview, tap it to land there.</p></div>
-        <div class="tools"><span class="route-stat">${plural(trips.length, "stop")}${countries ? ` · ${plural(countries, "country")}`.replace("countrys", "countries") : ""}</span><button class="btn gold" data-act="route-play" id="route-play">▶ Fly the route</button></div></div>
-      <div class="routebox" id="routebox"><svg id="route-svg" role="img" aria-label="Route through ${esc(trips.map(t => t.code).join(", "))}"></svg><div class="rtip" id="rtip" hidden></div></div>
+      <div class="sec-head"><div><div class="label">Flight log</div><h2>The route so far</h2><p>${trips.length < 2 ? "Your flights draw themselves here as you add trips." : "Every trip in order. Hover a stop for a preview, tap it to land there."}</p></div>
+        <div class="tools">${trips.length < 2 ? "" : `<span class="route-stat">`}${trips.length < 2 ? "" : plural(trips.length, "stop")}${countries ? ` · ${plural(countries, "country")}`.replace("countrys", "countries") : ""}${trips.length < 2 ? "" : `</span><button class="btn gold" data-act="route-play" id="route-play">▶ Fly the route</button>`}</div></div>
+      <div class="routebox" id="routebox"><svg id="route-svg" role="img" aria-label="${trips.length ? "Route through " + esc(trips.map(t => t.code).join(", ")) : "Empty route map"}"></svg><div class="rtip" id="rtip" hidden></div></div>
     </section>`;
   }
 
@@ -1174,6 +1186,26 @@ footer .label { color: var(--muted) }
     const box = $("#routebox"), svgEl = $("#route-svg");
     if (!box || !svgEl) return;
     const trips = tripOrder(), n = trips.length, w = Math.max(280, box.clientWidth);
+    if (n < 2) {
+      // Not enough trips for a flight yet: show the chart with the first pin (if any) and a dashed hop to "next stop".
+      const h = 280, cy = 140, ax = n ? w * .32 : w * .5, bx = w * .68;
+      svgEl.setAttribute("viewBox", `0 0 ${w} ${h}`); svgEl.setAttribute("width", w); svgEl.setAttribute("height", h);
+      svgEl.classList.toggle("small", w < 500);
+      const t = trips[0];
+      svgEl.innerHTML = mapBackdrop(w, h) + (n ? `
+        <path class="arc" d="M${ax} ${cy} Q${(ax + bx) / 2} ${cy - 70} ${bx} ${cy}"/>
+        <g class="node" data-pid="${esc(t.id)}" data-i="0" tabindex="0" role="link" aria-label="${esc(t.name)}" transform="translate(${ax} ${cy})" style="--c:${inkOf(t)}">
+          <circle class="halo" r="16"/><circle class="dot" r="7"/><text class="code" y="34" text-anchor="middle">${esc(t.code)}</text><text class="sub" y="50" text-anchor="middle">${esc((t.when || "").toUpperCase())}</text></g>
+        <g class="ghost" transform="translate(${bx} ${cy})"><circle r="7"/><text class="code" y="34" text-anchor="middle">???</text><text class="sub" y="50" text-anchor="middle">NEXT STOP</text></g>
+        <path class="plane" transform="translate(${(ax + bx) / 2} ${cy - 36}) rotate(0) scale(1.1)" d="M0-10 2-2 10 2v2l-8-2v6l3 2v2l-5-1-5 1v-2l3-2v-6l-8 2V2l8-4z"/>`
+        : `<g class="ghost" transform="translate(${ax} ${cy})"><circle r="7"/><text class="code" y="34" text-anchor="middle">START</text><text class="sub" y="50" text-anchor="middle">ADD YOUR FIRST TRIP</text></g>`);
+      box._pts = n ? [{ t, x: ax, y: cy }] : [];
+      if (routeRO) routeRO.disconnect();
+      let lastW0 = box.clientWidth;
+      routeRO = new ResizeObserver(() => { if (Math.abs(box.clientWidth - lastW0) > 4) { lastW0 = box.clientWidth; drawRoute(); } });
+      routeRO.observe(box);
+      return;
+    }
     const per = Math.max(2, Math.min(n, Math.floor((w - 20) / (w < 500 ? 80 : 120)))), rows = Math.ceil(n / per);
     const pad = w < 500 ? 30 : 56, rowH = w < 500 ? 150 : 180, top = w < 500 ? 120 : 130;
     svgEl.classList.toggle("small", w < 500);
@@ -1306,7 +1338,7 @@ footer .label { color: var(--muted) }
     return `<section class="block" id="recent-sec"><div class="sec-head"><div><div class="label">Latest roll</div><h2>Fresh off the film</h2></div></div>
       <div class="film"><div class="reel">${recent.map((ph, i) => {
         const pl = state.places.find(p => p.id === ph.placeId);
-        return `<button data-act="open-recent" data-i="${i}" aria-label="Photo from ${esc(pl?.name)}"><img src="${src(ph.assetId)}" alt="" loading="lazy">${pl ? `<span class="lbl">${esc(pl.code)}</span>` : ""}</button>`; }).join("")}</div></div></section>`;
+        return `<button data-act="open-recent" data-i="${i}" aria-label="${isVid(ph) ? "Video" : "Photo"} from ${esc(pl?.name)}">${thumb(ph)}${pl ? `<span class="lbl">${esc(pl.code)}</span>` : ""}</button>`; }).join("")}</div></div></section>`;
   }
 
   function placeView(p) {
@@ -1323,14 +1355,14 @@ footer .label { color: var(--muted) }
         <div class="bar">
           <a class="btn on-dark" href="#">← All stamps</a>
           <span>${state.canEdit ? `<button class="btn on-dark" data-act="banner">${p.bannerAssetId ? "Change background" : "Add background photo"}</button>${p.bannerAssetId ? `<button class="btn on-dark" data-act="banner-remove">Remove background</button>` : ""}<button class="btn on-dark" data-act="edit-place" data-pid="${esc(p.id)}">Edit</button><button class="btn on-dark" data-act="del-place">Delete</button>` : ""}
-          ${state.canEdit ? `<button class="btn gold" data-act="upload" ${state.uploading ? "disabled" : ""}>+ Add photos</button>` : ""}</span>
+          ${state.canEdit ? `<button class="btn gold" data-act="upload" ${state.uploading ? "disabled" : ""}>+ Add photos &amp; videos</button>` : ""}</span>
         </div>
         <div class="ptitle">
           <div class="motif-big" aria-hidden="true">${MOTIFS[motifOf(p)].svg}</div>
           <div class="big">${esc(p.code)}</div>
           <div>
             <h1>${esc(p.name)}</h1>
-            <div class="sub">${p.country ? `<span>${esc(p.country)}</span>` : ""}${p.when ? `<span>${esc(p.when)}</span>` : ""}${months.length ? `<span>${months.join(" ")}</span>` : ""}<span>${plural(list.length, "photo")}</span></div>
+            <div class="sub">${p.country ? `<span>${esc(p.country)}</span>` : ""}${p.when ? `<span>${esc(p.when)}</span>` : ""}${months.length ? `<span>${months.join(" ")}</span>` : ""}<span>${(() => { const v = list.filter(isVid).length, ph = list.length - v; return [ph || !v ? plural(ph, "photo") : "", v ? plural(v, "video") : ""].filter(Boolean).join(" · "); })()}</span></div>
             ${vibes.length ? `<div class="vibe-row">${vibes.map(v => `<span>${VIBES[v].icon}${VIBES[v].label}</span>`).join("")}</div>` : ""}
           </div>
         </div>
@@ -1341,15 +1373,15 @@ footer .label { color: var(--muted) }
       ${state.uploading ? `<div class="progress">Developing ${state.uploading.done} of ${state.uploading.total}…</div>` : ""}
       ${cur ? `<div class="viewer">
         <div class="screen">
-          <img class="main" src="${src(cur.assetId)}" alt="${esc(p.name)} photo ${state.view + 1}" data-act="full" style="cursor:zoom-in">
+          ${isVid(cur) ? `<video class="main" src="${src(cur.assetId)}" controls playsinline preload="metadata"></video>` : `<img class="main" src="${src(cur.assetId)}" alt="${esc(p.name)} photo ${state.view + 1}" data-act="full" style="cursor:zoom-in">`}
           ${list.length > 1 ? `<button class="btn on-dark round nav prev" data-act="vprev" aria-label="Previous photo">‹</button><button class="btn on-dark round nav next" data-act="vnext" aria-label="Next photo">›</button>` : ""}
           <div class="hud"><span class="pos">${esc(p.code)} · ${String(state.view + 1).padStart(2, "0")}/${String(list.length).padStart(2, "0")}</span>
             <span>${list.length > 1 ? `<button class="btn on-dark" data-act="play-place" data-pid="${esc(p.id)}">▶ Slideshow</button>` : ""}<button class="btn on-dark" data-act="full">Full screen</button></span></div>
         </div>
-        ${list.length > 1 ? `<div class="film"><div class="reel small" id="reel">${list.map((ph, i) => `<button class="${i === state.view ? "on" : ""}" data-act="vpick" data-i="${i}" aria-label="Photo ${i + 1}"><img src="${src(ph.assetId)}" alt="" loading="lazy"></button>`).join("")}</div></div>` : ""}
+        ${list.length > 1 ? `<div class="film"><div class="reel small" id="reel">${list.map((ph, i) => `<button class="${i === state.view ? "on" : ""}" data-act="vpick" data-i="${i}" aria-label="${isVid(ph) ? "Video" : "Photo"} ${i + 1}">${thumb(ph)}</button>`).join("")}</div></div>` : ""}
       </div>` : `<div class="empty" style="margin-top:28px"><div class="ghost">${esc(p.code)}</div><h3>Nothing developed yet</h3>
-        <p>${state.canEdit ? "Add photos from this trip. You can pick several at once." : "Check back soon."}</p>
-        ${state.canEdit ? `<button class="btn gold" data-act="upload">+ Add photos</button>` : ""}</div>`}
+        <p>${state.canEdit ? "Add photos and videos from this trip. You can pick several at once." : "Check back soon."}</p>
+        ${state.canEdit ? `<button class="btn gold" data-act="upload">+ Add photos &amp; videos</button>` : ""}</div>`}
       ${prevT || nextT ? `<div class="nexttrips">
         ${prevT ? `<a class="nt" href="#${encodeURIComponent(prevT.id)}" style="--c:${inkOf(prevT)}"><span class="nt-stamp">${stampArt(prevT, null, photosOf(prevT.id).length)}</span><span class="nt-txt"><small>← Previous trip</small><b>${esc(prevT.name)}</b><span>${esc(prevT.when || prevT.country || "")}</span></span></a>` : "<span></span>"}
         ${nextT ? `<a class="nt next" href="#${encodeURIComponent(nextT.id)}" style="--c:${inkOf(nextT)}"><span class="nt-txt"><small>Next trip →</small><b>${esc(nextT.name)}</b><span>${esc(nextT.when || nextT.country || "")}</span></span><span class="nt-stamp">${stampArt(nextT, null, photosOf(nextT.id).length)}</span></a>` : ""}
@@ -1425,15 +1457,16 @@ footer .label { color: var(--muted) }
     el.innerHTML = `<div class="bar">
         <span class="pos">${esc(place.code || "")} · ${esc(place.name || "")} · ${lb.index + 1}/${lb.list.length}</span>
         <span>${lb.list.length > 1 ? `<button class="btn on-dark" data-act="toggle-play">${lb.playing ? "❚❚ Pause" : "▶ Play"}</button>` : ""}
-          ${state.canEdit ? `<button class="btn on-dark" data-act="cover" ${isCover ? "disabled" : ""}>${isCover ? "Stamp photo" : "Use on stamp"}</button><button class="btn on-dark" data-act="del-photo">Delete</button>` : ""}
+          ${state.canEdit && isVid(ph) ? `<button class="btn on-dark" data-act="del-photo">Delete</button>` : ""}${state.canEdit && !isVid(ph) ? `<button class="btn on-dark" data-act="cover" ${isCover ? "disabled" : ""}>${isCover ? "Stamp photo" : "Use on stamp"}</button><button class="btn on-dark" data-act="del-photo">Delete</button>` : ""}
           <button class="btn on-dark" data-act="close">✕ Close</button></span></div>
-      <div class="stage"><img src="${src(ph.assetId)}" alt="">
+      <div class="stage">${isVid(ph) ? `<video src="${src(ph.assetId)}" controls playsinline ${lb.playing ? "autoplay" : ""}></video>` : `<img src="${src(ph.assetId)}" alt="">`}
         ${lb.list.length > 1 ? `<button class="btn on-dark round nav prev" data-act="prev" aria-label="Previous">‹</button><button class="btn on-dark round nav next" data-act="next" aria-label="Next">›</button>` : ""}
-        ${lb.playing ? `<div class="timer"><i></i></div>` : ""}</div>
+        ${lb.playing && !isVid(ph) ? `<div class="timer"><i></i></div>` : ""}</div>
       <div class="film" style="padding:14px 10px"><div class="reel small">${lb.list.slice(Math.max(0, lb.index - 12), lb.index + 13).map(t => {
-        const i = lb.list.indexOf(t); return `<button class="${i === lb.index ? "on" : ""}" data-act="jumpto" data-i="${i}" aria-label="Photo ${i + 1}"><img src="${src(t.assetId)}" alt=""></button>`; }).join("")}</div></div>`;
+        const i = lb.list.indexOf(t); return `<button class="${i === lb.index ? "on" : ""}" data-act="jumpto" data-i="${i}" aria-label="${isVid(t) ? "Video" : "Photo"} ${i + 1}">${thumb(t)}</button>`; }).join("")}</div></div>`;
     el.querySelector(".reel button.on")?.scrollIntoView({ block: "nearest", inline: "center" });
-    if (lb.playing) playTimer = setTimeout(() => step(1), 4000);
+    const v = el.querySelector(".stage video");
+    if (lb.playing) { if (v) v.addEventListener("ended", () => { if (lb?.playing) step(1); }, { once: true }); else playTimer = setTimeout(() => step(1), 4000); }
   }
 
   // ---------- dialogs ----------
@@ -1596,14 +1629,19 @@ footer .label { color: var(--muted) }
       return await new Promise(r => c.toBlob(b => r(b || file), "image/jpeg", 0.86));
     } catch { return file; }
   }
-  const why = e => e?.code === "unsupported_type" ? " (format not supported, try JPG or PNG)" : e?.code === "too_large" ? " (too large)" : "";
+  const why = e => e?.code === "unsupported_type" ? " (format not supported, use JPG, PNG, MP4 or MOV)" : e?.code === "too_large" ? " (too large: photos up to 20 MB, videos up to 50 MB)" : e?.message ? " (" + e.message + ")" : "";
   async function uploadFiles(files, pid) {
-    const list = [...files].filter(f => f.type.startsWith("image/") || /\.(heic|heif)$/i.test(f.name));
+    const list = [...files].filter(f => f.type.startsWith("image/") || f.type.startsWith("video/") || /\.(heic|heif|mov|mp4|webm)$/i.test(f.name));
     if (!list.length || !state.assets) return;
     state.uploading = { done: 0, total: list.length }; render();
     const failed = [];
     for (const f of list) {
-      try { const res = await state.assets.upload(await shrink(f)); await state.db.collection("photos").add({ placeId: pid, assetId: res.id, createdAt: Date.now() }); }
+      try {
+        const video = f.type.startsWith("video/") || /\.(mov|mp4|webm)$/i.test(f.name);
+        const blob = video ? (f.type ? f : new Blob([f], { type: /\.mov$/i.test(f.name) ? "video/quicktime" : "video/mp4" })) : await shrink(f);
+        const res = await state.assets.upload(blob);
+        await state.db.collection("photos").add({ placeId: pid, assetId: res.id, createdAt: Date.now(), ...(video ? { kind: "video" } : {}) });
+      }
       catch (e) { failed.push(f.name + why(e)); }
       state.uploading.done++; render();
     }
