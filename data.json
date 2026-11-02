@@ -766,6 +766,17 @@
       "placeId": "mvytmzj0222wrx",
       "assetId": "mvyttw40ol2akd.jpg",
       "createdAt": 1793597818774
+    },
+    "mvytu0saspjdsj": {
+      "placeId": "mvytmzj0222wrx",
+      "assetId": "mvyttyfbzuqove.jpg",
+      "createdAt": 1793597822074
+    },
+    "mvytu4ke2sfpky": {
+      "placeId": "mvytmzj0222wrx",
+      "assetId": "mvytu0ss3gk7jq.mov",
+      "createdAt": 1793597826974,
+      "kind": "video"
     }
   }
 }
