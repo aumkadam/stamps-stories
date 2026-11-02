@@ -30,6 +30,25 @@
       "shape": "",
       "createdAt": 1793595853554,
       "coverAssetId": "mvyt11kgj1jfay.jpg"
+    },
+    "mvytmzj0222wrx": {
+      "name": "Miami",
+      "code": "MIA",
+      "country": "USA",
+      "when": "Dec 2025",
+      "note": "",
+      "months": [
+        "Dec"
+      ],
+      "vibes": [
+        "city",
+        "beach",
+        "nightlife"
+      ],
+      "motif": "",
+      "ink": "",
+      "shape": "",
+      "createdAt": 1793597493852
     }
   },
   "photos": {
@@ -327,6 +346,11 @@
       "placeId": "mvysntv63xelqn",
       "assetId": "mvytmta5fwxxta.jpg",
       "createdAt": 1793597488144
+    },
+    "mvytmxknidegdq": {
+      "placeId": "mvysntv63xelqn",
+      "assetId": "mvytmva99xfb09.jpg",
+      "createdAt": 1793597491318
     }
   }
 }
