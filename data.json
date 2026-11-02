@@ -52,6 +52,24 @@
       "createdAt": 1793597493852,
       "bannerAssetId": "mvytvtepq5w24n.jpg",
       "coverAssetId": "mvytvlmzt4yira.jpg"
+    },
+    "mvyu4zucwvmn57": {
+      "name": "Orlando",
+      "code": "ORL",
+      "country": "USA",
+      "when": "Dec 2025",
+      "note": "",
+      "months": [
+        "Dec"
+      ],
+      "vibes": [
+        "city",
+        "adventure"
+      ],
+      "motif": "",
+      "ink": "amber",
+      "shape": "",
+      "createdAt": 1793598334067
     }
   },
   "photos": {
