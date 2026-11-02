@@ -774,12 +774,6 @@
       "assetId": "mvyttyfbzuqove.jpg",
       "createdAt": 1793597822074
     },
-    "mvytu4ke2sfpky": {
-      "placeId": "mvytmzj0222wrx",
-      "assetId": "mvytu0ss3gk7jq.mov",
-      "createdAt": 1793597826974,
-      "kind": "video"
-    },
     "mvytu95e4xx8ji": {
       "placeId": "mvytmzj0222wrx",
       "assetId": "mvytu4qo4076vh.jpg",
@@ -1014,6 +1008,11 @@
       "placeId": "mvytmzj0222wrx",
       "assetId": "mvytxbarx1p8o7.jpg",
       "createdAt": 1793597978336
+    },
+    "mvytxg1zhmgrko": {
+      "placeId": "mvytmzj0222wrx",
+      "assetId": "mvytxdlhh8884j.jpg",
+      "createdAt": 1793597981831
     }
   }
 }
