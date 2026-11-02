@@ -49,7 +49,8 @@
       "motif": "",
       "ink": "olive",
       "shape": "",
-      "createdAt": 1793597493852
+      "createdAt": 1793597493852,
+      "bannerAssetId": "mvytvtepq5w24n.jpg"
     }
   },
   "photos": {
@@ -898,6 +899,11 @@
       "placeId": "mvytmzj0222wrx",
       "assetId": "mvytvq6wgsxqsl.jpg",
       "createdAt": 1793597904201
+    },
+    "mvytvuc8fluk5y": {
+      "placeId": "mvytmzj0222wrx",
+      "assetId": "mvytvsc1aws6c9.jpg",
+      "createdAt": 1793597907031
     }
   }
 }
