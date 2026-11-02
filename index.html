@@ -1,0 +1,1804 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Stamps & Stories: a travel passport of places I've been.">
+<title>Stamps &amp; Stories</title>
+<style>
+:root { color-scheme: light; padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px) }
+body { margin: 0; font: 14px/1.4 system-ui, sans-serif }
+img { max-width: 100% }
+[hidden] { display: none !important }
+.owner-pill { position: fixed; left: max(14px, env(safe-area-inset-left, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px)); z-index: 40; display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 12px; background: var(--ink, #1a1d1f); color: var(--bg, #ecebe7); border-radius: 999px; font: 700 12px "Barlow Condensed", system-ui, sans-serif; letter-spacing: .12em; text-transform: uppercase; box-shadow: 0 6px 18px rgba(0,0,0,.2) }
+.owner-pill button { border: 0; border-radius: 999px; padding: 4px 10px; background: var(--bg, #ecebe7); color: var(--ink, #1a1d1f); font: inherit; cursor: pointer }
+</style>
+<script src="shim.js"></script>
+</head>
+<body>
+
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+/* Layout: passport-cover hero holding a tiltable ID page (photo, fields, MRZ) → flight log arc line through every trip in order → stamp page (one ink stamp per place) → recent film. A place opens a film-strip viewer. */
+:root {
+  --bg: #ecebe7;
+  --surface: #f8f7f4;
+  --ink: #1a1d1f;
+  --muted: #5c6267;
+  --line: #d2cfc7;
+  --accent: #1d4e7a;
+  --accent-ink: #ffffff;
+  --ink-1: #1f3a5f; --ink-2: #4b5d23; --ink-3: #2f6690; --ink-4: #3d4f5c; --ink-5: #7a2621;
+  --film: #151719;
+  --f-display: "Anton", Impact, "Arial Narrow", sans-serif;
+  --f-cond: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --f-body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+:root { color-scheme: light }
+
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.5 }
+h1, h2, h3 { margin: 0; text-wrap: balance }
+button, input, textarea { font: inherit; color: inherit }
+button { cursor: pointer }
+a { color: inherit }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px }
+.wrap { max-width: 1180px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+.label { font-family: var(--f-cond); font-weight: 700; font-size: 13px; letter-spacing: .22em; text-transform: uppercase }
+.icon { width: 16px; height: 16px; flex: none }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-family: var(--f-cond); text-transform: uppercase; letter-spacing: .08em; border: 1px solid var(--line); background: var(--surface); border-radius: 4px; padding: 9px 16px; font-weight: 700; font-size: 15px; text-decoration: none; transition: transform .15s, border-color .15s, background .15s }
+.btn:hover { border-color: var(--ink); transform: translateY(-1px) }
+.btn.gold { background: var(--accent); color: var(--accent-ink); border-color: var(--accent) }
+.btn.on-dark { background: rgba(255,255,255,.08); color: #f2efe6; border-color: rgba(255,255,255,.22) }
+.btn.on-dark:hover { background: rgba(255,255,255,.16); border-color: rgba(255,255,255,.5) }
+.btn[disabled] { opacity: .5; cursor: default; transform: none }
+.round { width: 42px; height: 42px; padding: 0; border-radius: 50% }
+
+/* ---------- passport cover hero ---------- */
+.cover { color: var(--ink); background:
+  repeating-radial-gradient(circle at 18% 120%, transparent 0 22px, rgba(26,29,31,.06) 22px 23px),
+  repeating-radial-gradient(circle at 110% -10%, transparent 0 30px, rgba(26,29,31,.05) 30px 31px),
+  linear-gradient(180deg, #e3e1db, var(--bg)); overflow: hidden; border-bottom: 1px solid var(--line) }
+.cover .btn.on-dark { background: var(--surface); color: var(--ink); border-color: var(--line) }
+.cover .btn.on-dark:hover { border-color: var(--ink) }
+.cover .wrap { padding-block: 22px 56px }
+.cover { position: relative }
+.cover .wrap { position: relative; z-index: 2 }
+.herobg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; filter: grayscale(1) contrast(1.08) brightness(1.06) }
+.herotint { position: absolute; inset: 0; z-index: 0; pointer-events: none; background: linear-gradient(160deg, var(--accent), color-mix(in srgb, var(--accent) 70%, #000)); mix-blend-mode: color; opacity: .55 }
+.herotint + .herotint { mix-blend-mode: multiply; opacity: .12 }
+.cover:has(.herobg)::before { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, rgba(236,235,231,.95) 0%, rgba(236,235,231,.82) 40%, rgba(236,235,231,.25) 75%, rgba(236,235,231,.1) 100%) }
+
+/* stamp editor dialog: fixed header and footer, one scrolling body, live preview on the left */
+.sheet.sheet-xl { width: min(940px, 100%); height: min(780px, calc(100dvh - 32px)); padding: 0; gap: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; overflow: hidden }
+.sx-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--line) }
+.sx-head h2 { font-size: 1.8rem }
+.sx-main { display: grid; grid-template-columns: 240px minmax(0, 1fr); min-height: 0 }
+.sx-preview { padding: 24px 20px; border-right: 1px solid var(--line); background: var(--bg); display: grid; align-content: start; justify-items: center; gap: 10px }
+.sx-preview .stamp { width: 180px; transform: none; pointer-events: none }
+.sx-body { overflow-y: auto; overflow-x: hidden; padding: 4px 22px 24px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; align-content: start; scrollbar-gutter: stable }
+.sx-sec { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; min-width: 0; padding-block: 18px; border-bottom: 1px solid var(--line) }
+.sx-sec:last-child { border-bottom: 0 }
+.sx-title { font-family: var(--f-cond); font-weight: 700; font-size: 13px; letter-spacing: .2em; text-transform: uppercase; color: var(--accent) }
+.sx-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 20px; border-top: 1px solid var(--line); background: var(--surface) }
+.sx-foot .err { flex: 1; min-width: 0 }
+.sx-btns { display: flex; gap: 8px; margin-left: auto }
+.sheet-xl .mpick, .sheet-xl .scrollbox { border: 1px solid var(--line); border-radius: 4px; padding: 8px; background: var(--bg) }
+.sheet-xl .mpick button, .sheet-xl .scrollbox button { background: var(--surface) }
+.sheet-xl .mpick button[aria-pressed="true"], .sheet-xl .scrollbox button[aria-pressed="true"] { background: var(--ink) }
+.scrollbox { max-height: 168px; overflow-y: auto }
+.sheet-xl .mpick { max-height: 250px }
+.sx-body, .sheet-xl .mpick, .scrollbox { scrollbar-width: thin; scrollbar-color: var(--muted) transparent }
+.sx-body::-webkit-scrollbar, .sheet-xl .mpick::-webkit-scrollbar, .scrollbox::-webkit-scrollbar { width: 8px }
+.sx-body::-webkit-scrollbar-thumb, .sheet-xl .mpick::-webkit-scrollbar-thumb, .scrollbox::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px }
+.sx-body::-webkit-scrollbar-thumb:hover, .sheet-xl .mpick::-webkit-scrollbar-thumb:hover, .scrollbox::-webkit-scrollbar-thumb:hover { background: var(--muted) }
+@media (max-width: 720px) {
+  .sheet.sheet-xl { height: calc(100dvh - 24px) }
+  .sx-main { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr) }
+  .sx-preview { border-right: 0; border-bottom: 1px solid var(--line); grid-auto-flow: column; justify-content: center; align-items: center; padding: 10px }
+  .sx-preview .stamp { width: 84px }
+  .sx-body { padding-inline: 16px }
+  .sheet-xl .mpick { max-height: 200px }
+}
+
+/* ---------- interactions ---------- */
+.pp-flip { position: relative; transform-style: preserve-3d; transition: transform .8s cubic-bezier(.3,.7,.2,1) }
+.pp-flip.flipped { transform: rotateY(180deg) }
+.pp-face { backface-visibility: hidden; -webkit-backface-visibility: hidden }
+.passport.pp-back { position: absolute; inset: 0; transform: rotateY(180deg); display: flex; flex-direction: column; overflow: hidden }
+.pp-flipbtn { margin-left: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 3px; padding: 2px 7px; font: 600 10px var(--f-cond); letter-spacing: .12em; text-transform: uppercase; cursor: pointer; position: relative; z-index: 3 }
+.pp-flipbtn:hover { border-color: var(--ink) }
+.visas { flex: 1; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 12px 10px; padding: 16px 4px 4px; overflow: auto }
+.visa { --c: var(--accent); --r: 0deg; transform: rotate(var(--r)); border: 2px solid var(--c); color: var(--c); border-radius: 4px; padding: 6px 10px 5px; display: grid; gap: 1px; min-width: 96px; outline: 1px dashed color-mix(in srgb, var(--c) 45%, transparent); outline-offset: 2px }
+.visa b { font-family: var(--f-display); font-weight: 400; font-size: 17px; letter-spacing: .04em; line-height: 1.05 }
+.visa span { font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase }
+.visa small { font-family: var(--f-mono); font-size: 9px; opacity: .75 }
+.visa-empty { color: var(--muted); font-size: 14px; padding: 20px 4px }
+.stamps .stamp { transform: rotate(var(--r)) }
+.stamps .stamp:hover, .stamps .stamp:focus-visible { transform: perspective(700px) rotateX(var(--ty, 0deg)) rotateY(var(--tx, 0deg)) scale(1.08) }
+.stamps .stamp.lit { transform: rotate(0) scale(1.12); filter: drop-shadow(0 0 0 transparent) drop-shadow(0 6px 14px color-mix(in srgb, var(--c) 40%, transparent)) }
+.stamps .stamp.press { animation: thunk .3s ease-out forwards }
+@keyframes thunk { 0% { transform: scale(1.08) } 40% { transform: scale(.86) rotate(-3deg) } 100% { transform: scale(1) rotate(0) } }
+.sortsel { width: auto; cursor: pointer }
+.secnav { position: fixed; left: 0; right: 0; top: 0; z-index: 30; padding-top: env(safe-area-inset-top, 0px); background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); transform: translateY(-110%); transition: transform .3s ease }
+.secnav.show { transform: none }
+.secnav-in { max-width: 1180px; margin: 0 auto; display: flex; gap: 4px; align-items: center; overflow-x: auto; scrollbar-width: none; padding: 8px max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px)) }
+.secnav-in::-webkit-scrollbar { display: none }
+.secnav button { flex: none; border: 0; background: none; padding: 7px 12px; border-radius: 3px; font: 700 13px var(--f-cond); letter-spacing: .14em; text-transform: uppercase; color: var(--muted) }
+.secnav button:hover { color: var(--ink) }
+.secnav button.on { color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent) }
+.secnav .sn-cta { margin-left: auto; color: var(--ink); border: 1px solid var(--line) }
+.totop { position: fixed; right: max(18px, env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 30; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-size: 18px; box-shadow: 0 6px 18px rgba(26,29,31,.15); cursor: pointer }
+.totop:hover { border-color: var(--ink) }
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); z-index: 80; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 4px; font-weight: 600; font-size: 14px; transition: opacity .25s, transform .25s; max-width: calc(100% - 32px) }
+.toast.show { opacity: 1; transform: translate(-50%, 0) }
+.nexttrips { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; padding-block: 32px 8px }
+.nt { --c: var(--accent); display: flex; align-items: center; gap: 14px; padding: 12px 16px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); text-decoration: none; color: var(--ink); transition: border-color .2s, transform .2s; min-width: 0 }
+.nt:hover { border-color: var(--c); transform: translateY(-2px) }
+.nt.next { justify-content: flex-end; text-align: right }
+.nt-stamp { width: 58px; flex: none; color: var(--c) }
+.nt-stamp svg { display: block; width: 100% }
+.nt-txt { display: grid; gap: 2px; min-width: 0 }
+.nt-txt small { font: 700 11px var(--f-cond); letter-spacing: .16em; text-transform: uppercase; color: var(--c) }
+.nt-txt b { font-family: var(--f-display); font-weight: 400; font-size: 1.4rem; text-transform: uppercase; line-height: 1.05; overflow-wrap: anywhere }
+.nt-txt span { font-size: 13px; color: var(--muted) }
+.lb .stage img { transition: transform .25s ease; cursor: zoom-in }
+.lb .stage img.zoom { transform: scale(2.2); cursor: zoom-out }
+.reel { cursor: grab }
+.reel.dragging { cursor: grabbing; scroll-behavior: auto }
+.reel.dragging button { pointer-events: none }
+.keys { display: grid; grid-template-columns: auto 1fr; gap: 10px 14px; align-items: center; font-size: 14px }
+kbd { font: 600 12px var(--f-mono); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 3px 8px; background: var(--bg); justify-self: start }
+@media (max-width: 560px) { .nexttrips { grid-template-columns: 1fr } .nt.next { justify-content: flex-start; text-align: left; flex-direction: row-reverse } }
+@media (prefers-reduced-motion: reduce) { .pp-flip, .secnav, .toast, .lb .stage img { transition: none } .stamps .stamp.press { animation: none } }
+@media (max-width: 820px) { .cover:has(.herobg)::before { background: linear-gradient(180deg, rgba(236,235,231,.92), rgba(236,235,231,.72) 60%, rgba(236,235,231,.55)) } }
+.cover-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; color: var(--gold) }
+.cover-top .label { color: var(--accent) }
+.crest { display: inline-flex; align-items: center; gap: 10px; font-family: var(--f-display); font-weight: 400; font-size: 18px; letter-spacing: .22em; text-transform: uppercase; color: var(--ink) }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 48px; align-items: center; margin-top: 40px }
+.hero-copy h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(3.6rem, 10vw, 7.2rem); line-height: .92; letter-spacing: .01em; text-transform: uppercase; display: grid; gap: 0; justify-items: start }
+.hero-copy h1 .n1, .hero-copy h1 .n2 { display: block; max-width: 100%; overflow-wrap: anywhere }
+.hero-copy h1 .n1 { color: var(--ink) }
+.hero-copy h1 .n2 { color: var(--accent) }
+.hero-copy .tag { font-size: clamp(1.1rem, 2.2vw, 1.35rem); margin: 18px 0 0; max-width: 34ch; color: var(--ink) }
+.hero-copy .bio { margin: 10px 0 0; max-width: 52ch; color: var(--muted) }
+.hero-copy .muted-hint { opacity: .6 }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px }
+
+/* ID page */
+.passport-stage { perspective: 1200px }
+.passport { --rx: 0deg; --ry: 0deg; --mx: 50%; --my: 50%; position: relative; background:
+    repeating-linear-gradient(115deg, rgba(26,29,31,.03) 0 2px, transparent 2px 9px), var(--surface);
+  color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 22px; box-shadow: 0 22px 44px rgba(26,29,31,.16), 0 1px 0 rgba(255,255,255,.8) inset;
+  transform: rotateX(var(--rx)) rotateY(var(--ry)); transition: transform .25s ease-out; transform-style: preserve-3d }
+.passport::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(40% 40% at var(--mx) var(--my), rgba(255,255,255,.6), transparent 70%),
+    linear-gradient(115deg, transparent 30%, rgba(140,170,200,.18) 45%, rgba(212,163,82,.22) 55%, transparent 70%);
+  mix-blend-mode: soft-light }
+.pp-head { display: flex; justify-content: space-between; gap: 10px; font-family: "Barlow Condensed", var(--f-display); font-weight: 600; font-size: 13px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line); padding-bottom: 10px }
+.pp-body { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 18px; padding-top: 16px }
+.photo { position: relative; aspect-ratio: 4 / 5; border-radius: 3px; overflow: hidden; background: var(--bg); border: 1px solid var(--line); max-width: 100% }
+.photo img { width: 100%; height: 100%; object-fit: cover; filter: saturate(.9) contrast(1.02) }
+.photo .ph { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); text-align: center; font-size: 12px; padding: 8px }
+.photo button { position: absolute; inset: 0; border: 0; background: transparent; color: transparent }
+.photo button:hover { background: rgba(20,22,24,.6); color: #fff; font-weight: 600; font-size: 13px }
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; min-width: 0 }
+.fields div { min-width: 0 }
+.fields .full { grid-column: 1 / -1 }
+.fields small { display: block; font-family: "Barlow Condensed", var(--f-display); font-weight: 600; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--accent) }
+.fields b { display: block; font-family: "Barlow", var(--f-body); font-weight: 600; font-size: 17px; letter-spacing: .02em; color: var(--ink); overflow-wrap: anywhere; font-variant-numeric: tabular-nums }
+.fields .soc { color: var(--ink); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--ink) 35%, transparent); position: relative; z-index: 2 }
+.fields .soc:hover { border-bottom-color: var(--ink) }
+.fields .soc span { font-size: .8em }
+.mini-stamp { position: absolute; right: 18px; top: 44px; transform: rotate(-12deg); border: 2px solid var(--ink-1); color: var(--ink-1); border-radius: 6px; padding: 2px 8px; font-family: var(--f-display); font-weight: 400; letter-spacing: .12em; font-size: 15px; opacity: .75 }
+.mrz { margin-top: 16px; padding-top: 10px; border-top: 1px solid var(--line); font-family: var(--f-mono); font-size: clamp(9px, 1.6vw, 12.5px); letter-spacing: .12em; color: var(--muted); white-space: nowrap; overflow: hidden; line-height: 1.6 }
+
+/* ---------- sections ---------- */
+section.block { padding-block: 56px 8px }
+.sec-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 14px; margin-bottom: 22px }
+.sec-head .label { color: var(--accent) }
+.sec-head h2 { font-family: var(--f-display); font-weight: 400; font-size: clamp(2.2rem, 5vw, 3.4rem); line-height: 1; text-transform: uppercase; letter-spacing: .02em }
+.sec-head p { margin: 6px 0 0; color: var(--muted); max-width: 52ch }
+.tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
+.search { border: 1px solid var(--line); background: var(--surface); border-radius: 4px; padding: 8px 12px; font-size: 14px; width: 200px; max-width: 100% }
+.chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; margin-bottom: 26px }
+.chips::-webkit-scrollbar { display: none }
+.chip { flex: none; font-family: var(--f-cond); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: transparent; border-radius: 3px; padding: 6px 13px; font-size: 14px }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink) }
+
+/* flight log */
+.routebox { position: relative; width: 100%; padding: 0; border-radius: 6px; background:
+  radial-gradient(120% 90% at 50% 40%, var(--surface), color-mix(in srgb, var(--accent) 6%, var(--surface))); border: 1px solid var(--line); overflow: visible }
+.routebox svg { display: block; width: 100%; height: auto; overflow: visible }
+.routebox .mapbg .grat { fill: none; stroke: color-mix(in srgb, var(--accent) 18%, var(--line)); stroke-width: 1; opacity: .7 }
+.routebox .mapbg .grat.prime { stroke: color-mix(in srgb, var(--accent) 30%, var(--line)); stroke-dasharray: 6 5 }
+.routebox .mapbg .deg { fill: var(--muted); font-family: var(--f-mono); font-size: 9px; letter-spacing: .08em; opacity: .75 }
+.routebox .mapbg .rose circle { fill: none; stroke: color-mix(in srgb, var(--accent) 35%, var(--line)); stroke-width: 1.2 }
+.routebox .mapbg .rose .thin { stroke-dasharray: 2 3 }
+.routebox .mapbg .rose .pt { fill: color-mix(in srgb, var(--accent) 55%, transparent) }
+.routebox .mapbg .rose .pt.dim { fill: color-mix(in srgb, var(--accent) 22%, transparent) }
+.routebox .mapbg .rose .n { fill: var(--accent); font-weight: 700; font-size: 11px; opacity: .8 }
+.routebox .mapbg .scale rect { fill: color-mix(in srgb, var(--accent) 45%, transparent); stroke: color-mix(in srgb, var(--accent) 45%, transparent); stroke-width: 1 }
+.routebox .mapbg .scale rect.hollow { fill: var(--surface) }
+.route-stat { font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; color: var(--muted); text-transform: uppercase }
+.routebox .arc { fill: none; stroke: var(--muted); stroke-width: 1.6; stroke-dasharray: 5 7; opacity: .55 }
+.routebox .arc-done { fill: none; stroke: var(--accent); stroke-width: 2.6; stroke-linecap: round }
+.routebox .node { cursor: pointer; outline: none }
+.routebox .node .halo { fill: var(--c); opacity: 0; transition: opacity .2s, r .2s }
+.routebox .node .dot { fill: var(--surface); stroke: var(--c); stroke-width: 3; transition: fill .2s, r .2s }
+.routebox .node .code { fill: var(--ink); font-family: var(--f-display); font-size: 24px; letter-spacing: .02em; transition: fill .2s }
+.routebox .node .sub { fill: var(--muted); font-family: var(--f-mono); font-size: 10px; letter-spacing: .1em }
+.routebox .node .num { fill: var(--muted); font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .08em; opacity: 0; transition: opacity .2s }
+.routebox .node:hover .halo, .routebox .node.on .halo, .routebox .node:focus-visible .halo { opacity: .18 }
+.routebox .node:hover .dot, .routebox .node.on .dot, .routebox .node:focus-visible .dot, .routebox .node.hit .dot { fill: var(--c); r: 9 }
+.routebox .node:hover .code, .routebox .node.on .code, .routebox .node:focus-visible .code { fill: var(--c) }
+.routebox .node:hover .num, .routebox .node.on .num, .routebox .node:focus-visible .num, .routebox .node.hit .num { opacity: 1 }
+.routebox .plane { fill: var(--accent); transition: opacity .4s }
+.routebox svg.small .node .code { font-size: 19px }
+.routebox svg.small .node .sub { font-size: 8.5px; letter-spacing: .04em }
+.rtip { position: absolute; z-index: 3; width: 230px; display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; align-items: center; padding: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 12px 28px rgba(26,29,31,.16); pointer-events: none }
+.rtip img, .rtip .rt-motif { width: 64px; height: 64px; border-radius: 4px; object-fit: cover; background: var(--bg) }
+.rtip .rt-motif { display: grid; place-items: center; padding: 10px }
+.rtip .rt-motif svg { width: 100%; height: 100% }
+.rtip .rt-body { display: grid; gap: 2px; min-width: 0 }
+.rtip b { font-family: var(--f-display); font-weight: 400; font-size: 18px; text-transform: uppercase; line-height: 1.1; overflow-wrap: anywhere }
+.rtip span { font-size: 12px; color: var(--muted) }
+
+/* stamp page */
+.stamps { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 132px)); justify-content: center; gap: 26px 22px; padding: 26px; border-radius: 6px; background:
+  repeating-linear-gradient(115deg, color-mix(in srgb, var(--ink-1) 5%, transparent) 0 2px, transparent 2px 10px), var(--surface); border: 1px solid var(--line) }
+.stamp { --c: var(--ink-1); --r: 0deg; position: relative; display: block; aspect-ratio: 200 / 240; color: var(--c); text-decoration: none; transform: rotate(var(--r)); transition: transform .35s cubic-bezier(.2,.8,.2,1.2), color .3s; max-width: 100% }
+.stamp:has(.peek):hover, .stamp:has(.peek):focus-visible { color: #fff }
+.stamp:hover, .stamp:focus-visible { transform: rotate(0deg) scale(1.06); z-index: 2 }
+.stamp > svg { display: block; width: 100%; height: 100%; overflow: visible }
+.stamp .peek { opacity: 0; transition: opacity .35s }
+.stamp:hover .peek, .stamp:focus-visible .peek { opacity: 1 }
+.stamp .code-t { font-family: var(--f-display); font-size: 40px; letter-spacing: 1.5px }
+.stamp .sub-t { font-family: var(--f-mono); font-size: 9.5px; letter-spacing: 1.6px; text-transform: uppercase }
+.stamp .name-t { font-family: var(--f-cond); font-weight: 700; font-size: 12px; letter-spacing: 2.2px }
+.motif-big svg, .mpick svg { width: 100%; height: 100%; display: block }
+.motif-big { width: clamp(70px, 14vw, 120px); aspect-ratio: 1; color: var(--accent); align-self: center }
+.mpick { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 6px; max-height: 236px; overflow-y: auto; padding: 2px }
+.ipick { display: grid; grid-template-columns: repeat(auto-fill, minmax(30px, 1fr)); gap: 6px }
+.ink-name { font-size: 13px; font-weight: 600 }
+.ink-custom { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 8px }
+.wheel { position: relative; display: inline-flex; align-items: center; gap: 8px; padding: 5px 10px 5px 5px; border: 1px solid var(--line); border-radius: 3px; background: var(--bg); font-size: 13px; font-weight: 600; cursor: pointer }
+.wheel input { width: 26px; height: 26px; padding: 0; border: 0; border-radius: 50%; background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red); cursor: pointer; -webkit-appearance: none; appearance: none }
+.wheel input::-webkit-color-swatch-wrapper { padding: 0 }
+.wheel input::-webkit-color-swatch { border: 0; border-radius: 50%; opacity: 0 }
+.wheel input::-moz-color-swatch { border: 0; border-radius: 50%; opacity: 0 }
+.ink-prev { width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--line) }
+.ipick button { display: grid; place-items: center; aspect-ratio: 1; padding: 3px; border: 1px solid var(--line); background: var(--bg); border-radius: 3px; font-size: 12.5px; font-weight: 500; color: var(--ink) }
+.ipick button[aria-pressed="true"] { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink) }
+.ipick .sw { width: 100%; height: 100%; border-radius: 50%; display: block }
+.ipick .sw.auto { background: conic-gradient(#1f3a5f 0 20%, #4b5d23 0 40%, #2f6690 0 60%, #3d4f5c 0 80%, #7a2621 0) }
+.mpick button { display: grid; justify-items: center; gap: 2px; padding: 6px 4px; border: 1px solid var(--line); background: var(--bg); border-radius: 3px; font-size: 11px; font-weight: 500; color: var(--ink) }
+.mpick button span.i { width: 30px; height: 30px }
+.spick { max-height: 260px }
+.spick button { font-size: 10px; line-height: 1.2; text-align: center }
+.fam-chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 6px }
+.fam-chips::-webkit-scrollbar { display: none }
+.fam-chips button { flex: none; border: 1px solid var(--line); background: var(--bg); border-radius: 3px; padding: 4px 10px; font-size: 12px; font-weight: 600; color: var(--ink) }
+.fam-chips button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink) }
+.spick button span.i { width: 26px; height: 32px }
+.mpick button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink) }
+.addstamp { aspect-ratio: 200 / 240; border-radius: 6px; border: 2px dashed var(--line); background: transparent; color: var(--muted); display: grid; place-items: center; font-weight: 600; font-size: 14px; transition: border-color .2s, color .2s; max-width: 100% }
+.addstamp:hover { border-color: var(--accent); color: var(--accent) }
+.addstamp b { display: block; font-family: var(--f-display); font-size: 3rem; line-height: .8; font-weight: 600 }
+
+.empty { padding: 44px 24px; text-align: center; display: grid; gap: 12px; justify-items: center; border-radius: 6px; background: var(--surface); border: 1.5px dashed var(--line) }
+.empty h3 { font-family: var(--f-display); font-weight: 400; font-size: 2rem; text-transform: uppercase }
+.empty p { max-width: 46ch; margin: 0; color: var(--muted) }
+.empty .ghost { font-family: var(--f-display); font-weight: 400; font-size: 4.5rem; line-height: 1; color: var(--line); border: 3px solid var(--line); border-radius: 50%; width: 150px; height: 150px; display: grid; place-items: center; transform: rotate(-8deg) }
+.notice { padding: 14px 16px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--muted) }
+
+/* film strip (shared) */
+.film { background: var(--film); border-radius: 4px; padding: 18px 12px; position: relative; overflow: hidden }
+.film::before, .film::after { content: ""; position: absolute; left: 0; right: 0; height: 10px; background: repeating-linear-gradient(90deg, transparent 0 8px, #3a3f43 8px 18px); background-clip: content-box; padding-inline: 4px }
+.film::before { top: 4px } .film::after { bottom: 4px }
+.reel { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: thin; scroll-behavior: smooth }
+.reel button { flex: none; position: relative; padding: 0; border: 0; background: #222; border-radius: 3px; overflow: hidden; height: 150px; aspect-ratio: 3 / 4; opacity: .8; transition: opacity .2s, transform .2s }
+.reel button:hover, .reel button.on { opacity: 1 }
+.reel button.on { outline: 2px solid var(--accent); outline-offset: 2px }
+.reel img { width: 100%; height: 100%; object-fit: cover }
+.reel .lbl { position: absolute; left: 6px; bottom: 6px; font-family: var(--f-mono); font-size: 10px; letter-spacing: .1em; background: rgba(0,0,0,.6); color: #fff; padding: 1px 5px; border-radius: 3px }
+.reel.small button { height: 72px }
+
+footer { padding-block: 56px 40px; text-align: center; color: var(--muted) }
+footer .label { color: var(--muted) }
+
+/* ---------- place page ---------- */
+.ptop { color: var(--ink); position: relative; overflow: hidden; border-bottom: 1px solid var(--line); background:
+  repeating-radial-gradient(circle at 18% 120%, transparent 0 22px, rgba(26,29,31,.06) 22px 23px),
+  repeating-radial-gradient(circle at 110% -10%, transparent 0 30px, rgba(26,29,31,.05) 30px 31px),
+  linear-gradient(180deg, color-mix(in srgb, var(--accent) 14%, #e3e1db), var(--bg)) }
+.trip { --accent: var(--stamp-ink) }
+.trip .ptop { border-bottom: 3px solid var(--accent) }
+.ptop .wrap { position: relative; z-index: 2; padding-block: 18px 34px; display: grid; gap: 22px }
+.ptop .btn.on-dark { background: var(--surface); color: var(--ink); border-color: var(--line) }
+.ptop .btn.on-dark:hover { border-color: var(--ink) }
+.ptop:has(.herobg)::before { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, rgba(236,235,231,.95) 0%, rgba(236,235,231,.8) 45%, rgba(236,235,231,.3) 80%, rgba(236,235,231,.15) 100%) }
+@media (max-width: 820px) { .ptop:has(.herobg)::before { background: linear-gradient(180deg, rgba(236,235,231,.9), rgba(236,235,231,.72) 60%, rgba(236,235,231,.6)) } }
+.ptop .bar { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap }
+.ptop .bar span { display: flex; gap: 8px; flex-wrap: wrap }
+.ptitle { display: flex; flex-wrap: wrap; align-items: end; gap: 10px 28px }
+.ptitle .big { font-family: var(--f-display); font-weight: 400; font-size: clamp(4.2rem, 15vw, 9rem); line-height: .85; color: var(--accent); letter-spacing: .01em }
+.ptitle h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(2rem, 5vw, 3.2rem); text-transform: uppercase; line-height: .95; color: var(--ink) }
+.ptitle .sub { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 8px; font-family: var(--f-mono); font-size: 12.5px; letter-spacing: .06em; color: var(--muted) }
+.ptitle .note { margin: 10px 0 0; max-width: 58ch; color: var(--ink) }
+.vibe-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px }
+.vibe-row span { display: inline-flex; gap: 6px; align-items: center; padding: 4px 10px; border-radius: 3px; background: var(--surface); border: 1px solid var(--line); font-size: 13px; color: var(--ink) }
+.viewer { margin-top: 28px; display: grid; gap: 12px }
+.screen { position: relative; background: var(--film); border-radius: 4px; overflow: hidden; aspect-ratio: 16 / 9; max-height: 72vh; width: 100%; display: grid; place-items: center }
+.screen img.main { width: 100%; height: 100%; object-fit: contain; animation: develop .5s ease }
+@keyframes develop { from { opacity: .2; filter: brightness(1.6) blur(3px) } to { opacity: 1; filter: none } }
+.screen .nav { position: absolute; top: 50%; transform: translateY(-50%) }
+.screen .prev { left: 12px } .screen .next { right: 12px }
+.screen .hud { position: absolute; left: 12px; right: 12px; bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap }
+.screen .pos { font-family: var(--f-mono); font-size: 12px; color: #fff; background: rgba(0,0,0,.55); padding: 4px 8px; border-radius: 6px; font-variant-numeric: tabular-nums }
+.screen .hud span { display: flex; gap: 6px; flex-wrap: wrap }
+.progress { font-family: var(--f-mono); font-size: 13px; color: var(--muted); padding-top: 16px }
+.more { display: flex; flex-wrap: wrap; gap: 8px; padding-block: 30px; align-items: center }
+.more a { text-decoration: none; font-family: var(--f-mono); font-size: 13px; letter-spacing: .06em; padding: 6px 12px; border: 1.5px solid var(--line); border-radius: 3px }
+.more a:hover { border-color: var(--accent); color: var(--accent) }
+
+/* ---------- lightbox ---------- */
+.lb { position: fixed; inset: 0; z-index: 50; background: rgba(10,11,12,.96); display: grid; grid-template-rows: auto 1fr auto; padding: calc(env(safe-area-inset-top, 0px) + 10px) max(12px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 12px) max(12px, env(safe-area-inset-left, 0px)); color: #fff }
+.lb .bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap }
+.lb .bar span { display: flex; gap: 8px; flex-wrap: wrap }
+.lb .pos { font-family: var(--f-mono); font-size: 12.5px; color: rgba(255,255,255,.8); font-variant-numeric: tabular-nums }
+.lb .stage { position: relative; display: grid; place-items: center; min-height: 0; padding-block: 10px }
+.lb .stage img { max-width: 100%; max-height: 100%; object-fit: contain; animation: develop .45s ease }
+.lb .nav { position: absolute; top: 50%; transform: translateY(-50%) }
+.lb .prev { left: 4px } .lb .next { right: 4px }
+.timer { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(255,255,255,.12) }
+.timer i { display: block; height: 100%; width: 0; background: #d4a352; animation: fill 4s linear forwards }
+@keyframes fill { to { width: 100% } }
+
+/* ---------- dialogs ---------- */
+.modal { position: fixed; inset: 0; z-index: 60; background: rgba(8,9,10,.6); display: grid; place-items: center; padding: 16px; overflow-y: auto }
+.sheet { background: var(--surface); color: var(--ink); border-radius: 6px; padding: 22px; width: min(500px, 100%); display: grid; gap: 14px; box-shadow: 0 24px 70px rgba(0,0,0,.35) }
+.sheet h2 { font-family: var(--f-display); font-weight: 400; font-size: 2rem; text-transform: uppercase; line-height: 1 }
+.sheet label { display: grid; align-content: start; gap: 4px; font-size: 14px; font-weight: 600 }
+.sheet input, .sheet textarea { border: 1px solid var(--line); background: var(--bg); border-radius: 3px; padding: 10px 12px; font-weight: 400; width: 100% }
+.sheet textarea { resize: vertical; min-height: 70px }
+.sheet .row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: start }
+.sheet .hint { font-size: 12.5px; color: var(--muted); font-weight: 400 }
+.sheet .foot { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap }
+.picker { display: flex; flex-wrap: wrap; gap: 6px }
+.picker button { border: 1px solid var(--line); background: var(--bg); border-radius: 3px; padding: 5px 10px; font-size: 13px; font-weight: 500; display: inline-flex; gap: 6px; align-items: center }
+.picker button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg) }
+.err { color: var(--ink-4); font-size: 14px; margin: 0 }
+#code-in { font-family: var(--f-mono); text-transform: uppercase; letter-spacing: .1em }
+.avatar-row { display: flex; align-items: center; gap: 12px }
+.avatar-row .av { width: 60px; height: 75px; border-radius: 3px; object-fit: cover; background: var(--line); flex: none }
+
+@media (max-width: 820px) {
+  .hero-grid { grid-template-columns: 1fr; gap: 32px; margin-top: 26px }
+}
+@media (max-width: 460px) {
+  .pp-body { grid-template-columns: 100px minmax(0, 1fr); gap: 12px }
+  .fields b { font-size: 15px }
+  .stamps { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 12px; padding: 16px }
+  .stamp .date { font-size: 9px }
+  .sheet .row { grid-template-columns: 1fr }
+}
+@media (prefers-reduced-motion: reduce) {
+  .passport, .stamp, .btn { transition: none }
+  .screen img.main, .lb .stage img { animation: none }
+  .reel { scroll-behavior: auto }
+}
+</style>
+
+<div id="root"><div class="wrap" style="padding-block:40px"><div class="notice">Opening your passport…</div></div></div>
+<input type="file" id="file-in" accept="image/*" multiple hidden>
+<input type="file" id="avatar-in" accept="image/*" hidden>
+<input type="file" id="bg-in" accept="image/*" hidden>
+<input type="file" id="banner-in" accept="image/*" hidden>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const root = $("#root");
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const src = id => (window.__localImg && window.__localImg[id]) || "images/" + (String(id).includes(".") ? id : id + ".jpg");
+  const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const svg = d => `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const m = d => `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const MOTIFS = {
+    liberty:   { label: "Liberty",     svg: m('<path d="M15 46h18M17 46v-7h14v7"/><path d="M19 39l1-15h8l1 15"/><path d="M20 24l-2-2h12l-2 2"/><circle cx="24" cy="17" r="3.4"/><path d="M19 15l-3.5-2.5M20.5 13l-1.5-4M24 12.3V8M27.5 13l1.5-4M29 15l3.5-2.5"/><path d="M28 22l5-12"/><path d="M31 10h4l-.5 2h-3z"/><path d="M33 9c-1.6-2-.8-4.5 0-6 .8 1.5 1.6 4 0 6z"/><path d="M20 26l-4 4 3 2"/>') },
+    palm:      { label: "Beach",       svg: m('<circle cx="37" cy="11" r="4.5"/><path d="M18 44c1-9 0-17-3-24"/><path d="M15 20c-4-4-9-4-12-1 4 0 7 1 9 3M15 20c-1-5-5-8-9-8 3 2 5 5 5 8M15 20c3-4 8-5 12-3-4 0-7 2-9 4M15 20c4-1 8 1 10 5-3-2-6-3-9-2"/><path d="M3 44c4-3 8-3 12 0s8 3 12 0 8-3 12 0 5 2 6 1"/>') },
+    castle:    { label: "Theme park",  svg: m('<path d="M8 44V26h6v-4h4v4h4V16h4v10h4v-4h4v4h6v18z"/><path d="M8 26l3-6 3 6M34 26l3-6 3 6M22 16l2-8 2 8"/><path d="M24 8V3l4 1.5L24 6"/><path d="M20 44v-7a4 4 0 0 1 8 0v7"/>') },
+    coaster:   { label: "Rides",       svg: m('<path d="M3 40c6 0 8-26 16-26 6 0 7 14 2 14s-4-12 4-14c9-2 9 26 20 26"/><path d="M3 44h42M10 42v-12M19 42V24M28 42V22M37 42v-8"/>') },
+    hollywood: { label: "Hollywood",   svg: m('<rect x="6" y="20" width="30" height="22" rx="2"/><path d="M6 20l3-8 28-4 1 8z"/><path d="M14 11l3 7M23 10l3 7M31 9l3 7"/><path d="M40 4l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z"/>') },
+    eiffel:    { label: "Eiffel",      svg: m('<path d="M24 3v6M21 9h6l3 15h-12zM18 24h12M15 33h18M17 24l-6 21M31 24l6 21M11 45h7c0-5 3-8 6-8s6 3 6 8h7"/>') },
+    bridge:    { label: "Bridge",      svg: m('<path d="M3 34h42M13 44V10M35 44V10M11 10h4M33 10h4"/><path d="M3 30c4 0 8-6 10-20 2 14 6 22 11 22s9-8 11-22c2 14 6 20 10 20"/><path d="M18 34v-6M24 34v-3M30 34v-6"/>') },
+    bigben:    { label: "Clock tower", svg: m('<path d="M18 46V16h12v30M16 16h16M20 16l4-12 4 12"/><circle cx="24" cy="23" r="3.5"/><path d="M24 21.5V23l1 1M18 32h12M18 39h12M10 46h28"/>') },
+    gateway:   { label: "Gateway",     svg: m('<path d="M8 44V22h32v22M6 22h36M10 22v-6h5v6M33 22v-6h5v6M19 22v-4h10v4"/><path d="M10 16l2.5-4 2.5 4M33 16l2.5-4 2.5 4"/><path d="M19 44V33c0-4 2-6 5-6s5 2 5 6v11M11 44v-6a2 2 0 0 1 4 0v6M33 44v-6a2 2 0 0 1 4 0v6"/>') },
+    taj:       { label: "Taj Mahal",   svg: m('<path d="M14 44V28h20v16M12 28h24"/><path d="M15 28c0-7 4-10 9-13 5 3 9 6 9 13"/><path d="M24 15V9M6 44V22M42 44V22M5 22h2M41 22h2"/><path d="M21 44v-7a3 3 0 0 1 6 0v7M4 44h40"/>') },
+    burj:      { label: "Tower",       svg: m('<path d="M24 3v8M22 11h4l3 33H19zM20 22h8M19.5 32h9M8 44V34h6v10M34 44V30h6v14M4 44h40"/>') },
+    dice:      { label: "Vegas",       svg: m('<rect x="5" y="16" width="20" height="20" rx="3"/><path d="M27 14l11-6 6 11-11 6z"/><circle cx="10" cy="21" r="1.2" fill="currentColor"/><circle cx="15" cy="26" r="1.2" fill="currentColor"/><circle cx="20" cy="31" r="1.2" fill="currentColor"/><circle cx="35.5" cy="16.5" r="1.2" fill="currentColor"/><path d="M8 44h32"/>') },
+    pagoda:    { label: "Pagoda",      svg: m('<path d="M24 3v5M12 14c4 0 8-3 12-6 4 3 8 6 12 6M15 14v6M33 14v6M9 24c5 0 10-2 15-4 5 2 10 4 15 4M13 24v8M35 24v8M6 36c6 0 12-2 18-4 6 2 12 4 18 4M10 36v8M38 36v8M4 44h40M21 44v-6h6v6"/>') },
+    mountain:  { label: "Mountains",   svg: m('<path d="M3 42l14-24 8 12 5-7 15 19z"/><path d="M12 27l5-9 4 6-3 2-2-2zM27 26l3-3 4 5-3 1z"/><circle cx="37" cy="10" r="4"/>') },
+    skyline:   { label: "Skyline",     svg: m('<path d="M4 44h40M7 44V26h7v18M14 44V14h8v30M22 44V20h6v24M28 44V8h8v36M36 44V24h6v20"/><path d="M32 8V3M17 19h2M17 25h2M17 31h2M31 14h2M31 20h2M31 26h2"/>') },
+    lighthouse:{ label: "Lighthouse",  svg: m('<path d="M19 44l3-28h6l3 28M21 16h8M22 12h6v4h-6zM25 12V8M20.5 26h9M19.5 36h11M4 44h42"/><path d="M29 10l10-4M29 13l11 0"/>') },
+    columns:   { label: "Ruins",       svg: m('<path d="M6 18L24 7l18 11zM8 18h32M10 22v18M17 22v18M24 22v18M31 22v18M38 22v18M7 40h34M5 44h38"/>') },
+    pyramid:   { label: "Desert",      svg: m('<path d="M3 42l15-24 15 24zM26 42l9-14 10 14M18 18l3 24M3 44h42"/><circle cx="38" cy="10" r="4"/>') },
+    food:      { label: "Food",        svg: m('<path d="M14 4v12a4 4 0 0 0 4 4v24M10 4v8M18 4v8"/><path d="M34 44V4c-5 3-7 10-7 16h7"/>') },
+    cocktail:  { label: "Nightlife",   svg: m('<path d="M8 8h28L22 26zM22 26v14M15 42h14"/><path d="M30 8l6-5"/><circle cx="38" cy="14" r="4"/>') },
+    tree:      { label: "Nature",      svg: m('<path d="M24 44V30M24 4L12 22h6L9 32h30l-9-10h6z"/><path d="M6 44h36"/>') },
+    car:       { label: "Road trip",   svg: m('<path d="M5 30l4-10a4 4 0 0 1 4-3h22a4 4 0 0 1 4 3l4 10v8H5z"/><circle cx="14" cy="38" r="4"/><circle cx="34" cy="38" r="4"/><path d="M10 26h28M2 44h44"/>') },
+    empire:    { label: "Empire State", svg: m('<path d="M24 2v6M22 8h4v6h-4zM20 14h8v8h-8zM17 22h14v22H17zM12 30h5v14h-5zM31 30h5v14h-5zM6 44h36M21 28h2M25 28h2M21 34h2M25 34h2"/>') },
+    ferris:    { label: "Ferris wheel", svg: m('<circle cx="24" cy="20" r="15"/><circle cx="24" cy="20" r="2"/><path d="M24 5v30M9 20h30M13.4 9.4l21.2 21.2M34.6 9.4L13.4 30.6M24 22l-8 22M24 22l8 22M12 44h24"/>') },
+    opera:     { label: "Opera house", svg: m('<path d="M4 38h40M6 38c2-10 8-16 16-18-2 6-2 12 0 18M18 38c3-12 10-20 20-22-3 7-3 15-1 22M30 38c2-8 6-12 12-13-2 4-2 9-1 13M2 44c5-3 9-3 14 0s9 3 14 0 9-3 14 0"/>') },
+    needle:    { label: "Sky tower",   svg: m('<path d="M24 2v8M14 14c4-3 16-3 20 0-4 4-16 4-20 0zM20 17l-4 27M28 17l4 27M18 30h12M12 44h24"/>') },
+    colosseum: { label: "Colosseum",   svg: m('<path d="M4 40V18c6-4 34-4 40 0v22M4 40c6 3 34 3 40 0M4 25c6 3 34 3 40 0M4 32c6 3 34 3 40 0M10 40v-5M17 41v-5M24 41v-5M31 41v-5M38 40v-5M10 28v-3M17 29v-3M24 29v-3M31 29v-3M38 28v-3"/>') },
+    pisa:      { label: "Leaning tower", svg: m('<path d="M17 44l6-38h8l-6 38zM18 37h10M19.5 28h9.5M21 19h9M22.4 11h8.5M12 44h22"/>') },
+    windmill:  { label: "Windmill",    svg: m('<path d="M18 44l3-22h6l3 22M14 44h20M24 18L10 8M24 18l10-14M24 18l14 10M24 18L14 32"/><circle cx="24" cy="18" r="2"/><path d="M22 44v-6h4v6"/>') },
+    minaret:   { label: "Mosque",      svg: m('<path d="M10 44V30c0-8 6-12 14-16 8 4 14 8 14 16v14M24 14V8M22 8h4M4 44V16M44 44V16M3 16h2M43 16h2M4 12v4M44 12v4M2 44h44M20 44v-7a4 4 0 0 1 8 0v7"/>') },
+    gopuram:   { label: "Temple",      svg: m('<path d="M10 44l4-30h20l4 30zM14 14l3-8h14l3 8M17 6l2-3h10l2 3M13 22h22M12 30h24M11 37h26M21 44v-6a3 3 0 0 1 6 0v6M6 44h36"/>') },
+    elephant:  { label: "Elephant",    svg: m('<path d="M12 40V27c0-8 6-13 14-13 9 0 14 6 14 13v3c0 3-1 5-3 6v4M32 40v-6M19 40v-6M12 27c-5 1-7 7-6 13h3"/><path d="M28 14c-4 2-4 9 1 11"/><circle cx="34" cy="21" r="1.2" fill="currentColor"/><path d="M4 44h40"/>') },
+    rickshaw:  { label: "Rickshaw",    svg: m('<path d="M8 32h22l6-14H14c-3 0-6 3-6 8zM14 18c2-6 8-10 16-10 4 0 6 4 6 10M30 32h6l4-8"/><circle cx="12" cy="36" r="4"/><circle cx="36" cy="36" r="4"/><path d="M4 44h40"/>') },
+    houseboat: { label: "Houseboat",   svg: m('<path d="M4 32h40l-5 7H9zM10 32c2-8 8-12 14-12s12 4 14 12M16 32v-6M24 32v-8M32 32v-6M2 44c5-3 9-3 14 0s9 3 14 0 9-3 14 0"/>') },
+    sailboat:  { label: "Sailboat",    svg: m('<path d="M24 4v30M24 6l14 26H24M24 10L10 32h14M6 36h36l-5 6H11zM2 46c5-3 9-3 14 0s9 3 14 0 9-3 14 0"/>') },
+    surf:      { label: "Surf",        svg: m('<path d="M30 4c8 8 10 22 2 36-3 3-6 3-7 0-6-14-3-28 5-36zM27 10l3 28"/><path d="M2 44c5-3 9-3 14 0s9 3 14 0 9-3 14 0"/>') },
+    balloon:   { label: "Hot-air balloon", svg: m('<path d="M24 4c-9 0-15 7-15 15 0 9 9 15 12 19h6c3-4 12-10 12-19 0-8-6-15-15-15zM24 4c-4 4-6 10-6 15s3 13 3 19M24 4c4 4 6 10 6 15s-3 13-3 19M20 38h8l-1 6h-6z"/>') },
+    snow:      { label: "Snow",        svg: m('<path d="M24 4v40M7 14l34 20M7 34l34-20M20 8l4 4 4-4M20 40l4-4 4 4M8 19l5-1-1-5M40 29l-5 1 1 5M8 29l5 1-1 5M40 19l-5-1 1-5"/>') },
+    cactus:    { label: "Cactus",      svg: m('<path d="M20 44V10a4 4 0 0 1 8 0v34M20 30h-6a4 4 0 0 1-4-4v-8M28 24h6a4 4 0 0 0 4-4v-6M8 44h32"/>') },
+    guitar:    { label: "Music",       svg: m('<circle cx="18" cy="34" r="9"/><circle cx="24" cy="26" r="6"/><path d="M27 23l13-13M38 6l4 4-3 3-4-4z"/><circle cx="18" cy="33" r="2.5"/>') },
+    maple:     { label: "Maple leaf",  svg: m('<path d="M24 44V32M24 4l4 8 6-3-2 10 8-2-3 6 6 3-12 6 1 4-8-2-8 2 1-4-12-6 6-3-3-6 8 2-2-10 6 3z"/>') },
+    tram:      { label: "Tram",        svg: m('<rect x="8" y="12" width="32" height="24" rx="4"/><path d="M8 22h32M16 12V6h16v6M24 6l-6-4M24 6l6-4M14 36l-2 6M34 36l2 6M14 28h4M30 28h4M4 44h40"/>') },
+    charminar: { label: "Charminar",   svg: m('<path d="M10 44V18M38 44V18M8 18h4M36 18h4M9 12l1-6 1 6M37 12l1-6 1 6M9 12h2v6H9zM37 12h2v6h-2z"/><path d="M12 24h24v20H12zM12 24c4-3 20-3 24 0M18 44V36a6 6 0 0 1 12 0v8M12 30h24"/><path d="M4 44h40"/>') },
+    hawamahal: { label: "Palace",      svg: m('<path d="M8 44V22l16-16 16 16v22zM8 22h32M12 28h24M10 35h28"/><path d="M14 22v-3a2 2 0 0 1 4 0v3M22 22v-6a2 2 0 0 1 4 0v6M30 22v-3a2 2 0 0 1 4 0v3M13 28v4M18 28v4M24 28v4M30 28v4M35 28v4M21 44v-5a3 3 0 0 1 6 0v5M4 44h40"/>') },
+    qutub:     { label: "Minar",       svg: m('<path d="M18 44l3-38h6l3 38zM17 34h14M18.5 24h11M20 15h8M22 6l2-3 2 3M10 44h28"/>') },
+    lotus:     { label: "Lotus",       svg: m('<path d="M24 10c-5 6-5 16 0 24 5-8 5-18 0-24zM24 34c-8-2-14-8-16-18 8 1 14 7 16 18zM24 34c8-2 14-8 16-18-8 1-14 7-16 18zM24 34c-10 2-18 0-22-6 8-2 16 0 22 6zM24 34c10 2 18 0 22-6-8-2-16 0-22 6zM4 40h40M10 44h28"/>') },
+    stupa:     { label: "Stupa",       svg: m('<path d="M8 44h32M10 44v-4h28v4M12 40c0-10 5-16 12-16s12 6 12 16M20 24v-4h8v4M22 20v-8h4v8M21 12l3-8 3 8"/><path d="M28 6l10 3-10 3"/>') },
+    redeemer:  { label: "Redeemer",    svg: m('<circle cx="24" cy="8" r="3"/><path d="M4 16h40M20 14h8M21 16l-1 22h8l-1-22M18 38h12l2 6H16zM2 46l10-8 8 8M46 46l-10-8-8 8"/>') },
+    capitol:   { label: "Capitol",     svg: m('<path d="M24 2v4M20 10c0-3 2-4 4-4s4 1 4 4M16 22c0-7 4-12 8-12s8 5 8 12M14 22h20M15 22v8M19 22v8M23 22v8M27 22v8M31 22v8M4 30h40v14H4zM4 36h40M2 44h44"/>') },
+    stlarch:   { label: "Arch",        svg: m('<path d="M8 44C8 20 14 6 24 6s16 14 16 38M13 44c0-20 5-32 11-32s11 12 11 32M2 44h44"/>') },
+    castle2:   { label: "Old castle",  svg: m('<path d="M6 44V24h8v20M34 44V24h8v20M14 30h20v14H14zM6 24l4-10 4 10M34 24l4-10 4 10M20 30V16h8v14M20 16l4-10 4 10M10 14V8l3 1.5L10 11M21 44v-6a3 3 0 0 1 6 0v6M4 44h40"/>') },
+    aurora:    { label: "Northern lights", svg: m('<path d="M4 20c6-10 12 4 18-6s12 0 22-8M4 28c8-8 14 2 20-6s14 2 20-4"/><path d="M2 40l10-10 6 6 8-10 10 12 10-6M2 44h44"/><circle cx="36" cy="12" r="1" fill="currentColor"/><circle cx="12" cy="8" r="1" fill="currentColor"/>') },
+    volcano:   { label: "Volcano",     svg: m('<path d="M2 44l14-24h16l14 24zM16 20c2-2 4-2 6 0s4 2 6 0 4-2 4 0"/><path d="M22 14c-2-4 0-8 4-10M28 14c2-4 6-6 10-4M18 14c-2-3-6-4-10-2"/>') },
+    waterfall: { label: "Waterfall",   svg: m('<path d="M4 10h14v34H4M44 10H30v34h14M18 10c4 0 8 0 12 0M20 12v28M24 12v30M28 12v28"/><path d="M14 44c3-4 6-4 10 0s7 4 10 0"/>') },
+    canyon:    { label: "Canyon",      svg: m('<path d="M2 44V24h8v-8h10v14h8V18h8v-6h10v32M2 44h44"/><path d="M14 30c4 2 8 6 10 14M34 24c-2 6-4 12-4 20"/><circle cx="36" cy="6" r="3"/>') },
+    whale:     { label: "Whale",       svg: m('<path d="M4 30c0-8 8-14 20-14 10 0 16 5 18 12 2-3 4-5 6-6-1 4-1 8 0 12-2-1-4-3-6-6-2 7-10 10-18 10-12 0-20-3-20-8z"/><circle cx="14" cy="27" r="1.2" fill="currentColor"/><path d="M20 10c0-3 2-5 4-6M20 10c-2-2-4-3-6-2M2 46c5-3 9-3 14 0s9 3 14 0 9-3 14 0"/>') },
+    coral:     { label: "Scuba",       svg: m('<path d="M6 24c4-6 12-8 18-2-4 4-12 6-18 2zM6 24l-4-4M6 24l-4 4"/><circle cx="20" cy="23" r="1" fill="currentColor"/><path d="M30 44V32c0-4-4-6-4-10M30 34c3-2 4-6 4-10M38 44V30c0-3 3-5 3-8M4 44h40M32 8a2 2 0 1 0 0 .1M38 14a1.5 1.5 0 1 0 0 .1"/>') },
+    tent:      { label: "Camping",     svg: m('<path d="M4 42L24 8l20 34zM24 8v34M18 42l6-12 6 12M2 42h44"/><path d="M36 8l2 3 3 1-3 1-2 3-2-3-3-1 3-1z"/>') },
+    train:     { label: "Toy train",   svg: m('<path d="M6 34V20h16v14M22 34V14h14v20M6 20l2-6h12l2 6M36 24h6v10h-6M26 18h6v6h-6zM10 24h8v4h-8z"/><circle cx="12" cy="38" r="3.5"/><circle cx="30" cy="38" r="3.5"/><path d="M28 14V8h4v6M2 44h44"/>') },
+    tea:       { label: "Tea",         svg: m('<path d="M8 22h26v8a12 12 0 0 1-12 12h-2A12 12 0 0 1 8 30zM34 25h3a4 4 0 0 1 0 8h-4M4 44h36M16 16c-2-3 2-5 0-8M24 16c-2-3 2-5 0-8"/>') },
+    camel:     { label: "Camel",       svg: m('<path d="M6 44V30c0-4 3-6 6-6 2-6 5-8 8-4 3-4 7-2 8 4h4c0-6 4-10 8-10 2 0 4 2 4 4l-4 2v8c0 2-2 4-4 4v12M12 44V34M30 44V34M2 46h44"/>') },
+    stadium:   { label: "Stadium",     svg: m('<path d="M4 26c0-5 9-9 20-9s20 4 20 9v10c0 5-9 9-20 9S4 41 4 36zM4 26c0 5 9 9 20 9s20-4 20-9M10 18V8M38 18V8M8 8h4M36 8h4"/><path d="M14 30c3 1 7 2 10 2s7-1 10-2"/>') },
+    umbrella:  { label: "Beach day",   svg: m('<path d="M6 22a18 18 0 0 1 36 0zM24 4v4M24 22v18M24 40c0 3-4 3-4 0M15 22c0-6 4-14 9-18M33 22c0-6-4-14-9-18M2 44h44"/>') },
+    mayan: { label: "Step pyramid", svg: m('<path d="M4 44h40M8 44v-6h32v6M11 38v-6h26v6M14 32v-6h20v6M17 26v-6h14v6M20 20v-6h8v6M22 44V24h4v20"/>') },
+    machu: { label: "Machu Picchu", svg: m('<path d="M2 44l10-26 6 8 10-20 18 38z"/><path d="M10 36h8M8 40h12M14 32h6M30 36h8M28 40h12"/>') },
+    mission: { label: "Mission", svg: m('<path d="M6 44V26h36v18M6 26h8c0-4 4-8 10-12 6 4 10 8 10 12h8M18 44V34a6 6 0 0 1 12 0v10M12 32v4M36 32v4M2 44h44"/>') },
+    totem: { label: "Totem pole", svg: m('<path d="M18 44V8h12v36M18 16h12M18 26h12M18 36h12M10 10h28M21 12h2M25 12h2M21 21h2M25 21h2M22 31h4"/>') },
+    cablecar: { label: "Cable car", svg: m('<path d="M2 8l44 8M24 12v6M10 18h28v18H10zM10 26h28M15 18v8M24 18v8M33 18v8"/><circle cx="16" cy="38" r="2.5"/><circle cx="32" cy="38" r="2.5"/><path d="M4 44l40-4"/>') },
+    parrot: { label: "Parrot", svg: m('<path d="M22 6c-6 0-10 5-10 11 0 8 6 12 10 14l4 13 3-1-2-12c5-3 8-8 8-14 0-7-6-11-13-11z"/><path d="M14 10c-4 0-6 3-5 6 2 1 4 0 5-2"/><circle cx="18" cy="11" r="1.3" fill="currentColor"/><path d="M6 34h34M22 18c3 4 7 6 10 6"/>') },
+    llama: { label: "Llama", svg: m('<path d="M30 6l2-4 2 4M28 6h8v8l-2 2v10c0 2-2 4-4 4H16c-3 0-6 2-6 6v8M14 36v8M24 30v14M30 30v14M10 30c-4-2-6 2-4 6"/><circle cx="32" cy="9" r="1" fill="currentColor"/>') },
+    penguin: { label: "Penguin", svg: m('<path d="M24 4c-6 0-9 5-9 12v14c0 8 4 12 9 12s9-4 9-12V16c0-7-3-12-9-12z"/><path d="M19 18c0 8 1 18 5 22 4-4 5-14 5-22M15 22l-6 10M33 22l6 10M18 44h4M26 44h4"/><circle cx="21" cy="12" r="1" fill="currentColor"/><circle cx="27" cy="12" r="1" fill="currentColor"/><path d="M23 15h2l-1 2z"/>') },
+    sagrada: { label: "Sagrada Família", svg: m('<path d="M6 44V22l3-14 3 14v22M14 44V16l3-12 3 12v28M28 44V16l3-12 3 12v28M36 44V22l3-14 3 14v22M20 44V28h8v16M4 44h40"/>') },
+    brandenburg: { label: "Brandenburg Gate", svg: m('<path d="M4 44h40M6 18h36v6H6zM8 24v20M14 24v20M20 24v20M28 24v20M34 24v20M40 24v20M20 18v-4h8v4M18 14h12M22 14l2-6 2 6"/>') },
+    onion: { label: "Onion domes", svg: m('<path d="M10 44V30h28v14M14 30c-3-4-3-8 0-12 3 4 3 8 0 12zM24 30c-5-6-5-14 0-20 5 6 5 14 0 20zM34 30c-3-4-3-8 0-12 3 4 3 8 0 12zM24 10V4M14 18v-4M34 18v-4M20 44v-6a4 4 0 0 1 8 0v6M4 44h40"/>') },
+    towerbridge: { label: "Tower Bridge", svg: m('<path d="M2 26h44M2 32h44M10 44V14h8v30M30 44V14h8v30M10 14l4-8 4 8M30 14l4-8 4 8M18 18h12M18 22h12M2 26c3 0 6-4 8-6M46 26c-3 0-6-4-8-6M2 44c5-3 9-3 14 0s9 3 14 0 9-3 14 0"/>') },
+    bluedome: { label: "Blue dome", svg: m('<path d="M8 44V28h24v16M6 28h28M10 28c0-8 4-12 10-12s10 4 10 12M20 16v-6M18 12h4M34 44V24h8v20M36 24v-4h4v4M18 44v-6a2 2 0 0 1 4 0v6M2 44h44"/>') },
+    gondola: { label: "Gondola", svg: m('<path d="M4 34c8 4 32 4 40-6-2 6-8 10-16 10H14c-4 0-8-2-10-4zM28 32V12M26 12h4M36 30l4-22M12 32l2-4h10l2 4M2 44c5-3 9-3 14 0s9 3 14 0 9-3 14 0"/>') },
+    chalet: { label: "Chalet", svg: m('<path d="M4 24L24 8l20 16M8 22v22h32V22M14 30h6v6h-6zM28 30h6v6h-6zM20 44v-6h8v6M2 44h44"/><path d="M32 6l4-4 4 4"/>') },
+    beer: { label: "Beer", svg: m('<path d="M10 14h20v28a2 2 0 0 1-2 2H12a2 2 0 0 1-2-2zM30 20h4a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4h-4M10 14c0-4 4-6 6-4 2-4 8-4 10 0 2-2 6 0 4 4M16 22v16M24 22v16"/>') },
+    stonehenge: { label: "Stonehenge", svg: m('<path d="M4 44h40M6 44V20h6v24M6 20h16v4H6M16 44V24h6v20M26 44V18h6v26M26 18h16v4H26M36 44V22h6v22"/>') },
+    viking: { label: "Viking ship", svg: m('<path d="M4 30h40c-2 6-8 10-14 10H18C12 40 6 36 4 30zM4 30c-2-6 0-12 4-14M44 30c2-6 0-12-4-14M24 30V6M24 8l12 8-12 12M24 8l-12 8 12 12M2 46c5-3 9-3 14 0s9 3 14 0 9-3 14 0"/>') },
+    fuji: { label: "Mount Fuji", svg: m('<path d="M2 44l16-26c2-3 10-3 12 0l16 26z"/><path d="M15 23c3 2 5 0 6 2s3 0 4 0 3 2 4 0 3 1 4-2"/><circle cx="38" cy="10" r="4"/>') },
+    torii: { label: "Torii gate", svg: m('<path d="M4 10c8 2 32 2 40 0l-2 4c-8 2-28 2-36 0zM8 18h32M12 14v30M36 14v30M24 14v4M8 44h8M32 44h8"/>') },
+    greatwall: { label: "Great Wall", svg: m('<path d="M2 40c8-4 12-14 20-14s12 8 24 2M2 34c8-4 12-14 20-14s12 8 24 2M8 33v-4h4v3M18 24v-4h4v4M30 26v-4h4v5M40 27v-4h4v3M2 44h44"/>') },
+    angkor: { label: "Angkor Wat", svg: m('<path d="M4 44h40M6 44V34h36v10M10 34v-6h28v6M14 28c0-6 2-10 4-12 2 2 4 6 4 12M26 28c0-6 2-10 4-12 2 2 4 6 4 12M20 28c0-10 2-18 4-22 2 4 4 12 4 22M22 44v-6h4v6"/>') },
+    twintowers: { label: "Twin towers", svg: m('<path d="M10 44V14l4-4 4 4v30M30 44V14l4-4 4 4v30M14 10V2M34 10V2M18 24h12M10 20h8M30 20h8M10 28h8M30 28h8M10 36h8M30 36h8M4 44h40"/>') },
+    mbs: { label: "Sky park", svg: m('<path d="M6 44V16h8v28M20 44V16h8v28M34 44V16h8v28M4 14c8-2 32-2 40 0l-2 3H6zM2 44h44"/>') },
+    lantern: { label: "Lantern", svg: m('<path d="M24 2v4M18 6h12M16 10c-4 4-4 18 0 22h16c4-4 4-18 0-22zM16 10h16M18 32v4h12v-4M24 36v6M20 44h8M14 18h20M14 25h20"/>') },
+    terraces: { label: "Rice terraces", svg: m('<path d="M2 44h44M4 40c8-2 32-2 40-6M6 34c8-2 30-2 36-6M8 28c8-2 26-2 32-6M12 22c6-2 20-2 24-6M16 16c4-2 12-2 14-6"/><circle cx="38" cy="8" r="3"/>') },
+    goldentemple: { label: "Golden Temple", svg: m('<path d="M10 34V24h28v10M8 24h32M14 24c0-6 4-10 10-12 6 2 10 6 10 12M24 12V6M12 24v-4M36 24v-4M2 38h44M4 44c5-3 9-3 14 0s9 3 14 0 9-3 14 0M20 34v-4h8v4"/>') },
+    dhow: { label: "Dhow", svg: m('<path d="M4 32h36l4-4-4 10H10zM22 32V4M22 6c8 6 14 14 16 24H22M22 10c-6 6-10 12-12 20h12M2 46c5-3 9-3 14 0s9 3 14 0 9-3 14 0"/>') },
+    panda: { label: "Panda", svg: m('<circle cx="24" cy="26" r="14"/><circle cx="13" cy="13" r="5"/><circle cx="35" cy="13" r="5"/><ellipse cx="18" cy="25" rx="3.5" ry="4.5"/><ellipse cx="30" cy="25" rx="3.5" ry="4.5"/><path d="M22 32h4l-2 2zM20 36c2 2 6 2 8 0"/>') },
+    sakura: { label: "Cherry blossom", svg: m('<circle cx="24" cy="24" r="3"/><path d="M24 21c-3-6-2-12 0-15 2 3 3 9 0 15zM27 23c4-5 10-7 13-5-1 3-7 6-13 5zM26 27c6 2 9 7 8 10-3 1-8-3-8-10zM22 27c-1 7-5 11-8 10-1-3 2-8 8-10zM21 23c-6 1-12-2-13-5 3-2 9 0 13 5z"/>') },
+    baligate: { label: "Split gate", svg: m('<path d="M4 44h40M6 44V30l4-6 2-8 2-6h6v34M42 44V30l-4-6-2-8-2-6h-6v34M20 36h8M18 44v-4h12v4M10 30h10M28 30h10"/>') },
+    tablemtn: { label: "Table Mountain", svg: m('<path d="M2 36l6-8 4-12h22l4 10 8 10M12 16c6 1 16 1 22 0M2 38h44M2 44c5-3 9-3 14 0s9 3 14 0 9-3 14 0"/>') },
+    baobab: { label: "Baobab", svg: m('<path d="M18 44c2-8 2-18 0-26h12c-2 8-2 18 0 26M14 18c-6-2-8-6-6-10M18 18c-2-6 0-10 2-12M24 18V6M30 18c2-6 0-10-2-12M34 18c6-2 8-6 6-10M4 44h40"/><circle cx="38" cy="30" r="4"/>') },
+    giraffe: { label: "Giraffe", svg: m('<path d="M28 6l4-2M30 4h6l2 4-4 2v16l-2 2H16c-2 0-4 2-4 4v14M16 44V32M28 44V30M32 28v16M12 30c-4 0-6-2-6-6"/><circle cx="34" cy="7" r="1" fill="currentColor"/><path d="M20 30h2M24 33h2M28 13h2"/>') },
+    lion: { label: "Lion", svg: m('<circle cx="24" cy="22" r="10"/><path d="M24 4c3 3 7 1 9 4s6 3 6 7-1 6 1 9-2 7-5 8-3 5-7 6-6-1-9 0-6-2-8-5-5-5-4-9-1-6 1-9 1-6 5-7 6-1 9-4z"/><circle cx="20" cy="20" r="1" fill="currentColor"/><circle cx="28" cy="20" r="1" fill="currentColor"/><path d="M22 25h4l-2 2zM20 29c2 1 6 1 8 0"/>') },
+    petra: { label: "Petra", svg: m('<path d="M4 44V4M44 44V4M10 44V26h28v18M8 26h32M12 26V14h24v12M10 14h28M20 14l4-8 4 8M14 44V30M20 44V30M28 44V30M34 44V30M22 44v-8h4v8"/>') },
+    kangaroo: { label: "Kangaroo", svg: m('<path d="M30 8l2-4 2 4M28 8c4 0 8 2 8 6l-4 2-2 6c4 2 6 6 6 12v4l4 6h-8l-4-6c-4 0-8-2-10-6l-8 10M14 30c-4 0-8 4-12 10M26 22l-6 6"/><circle cx="32" cy="10" r="1" fill="currentColor"/>') },
+    kiwi: { label: "Kiwi", svg: m('<path d="M10 28c0-8 6-14 16-14s14 6 14 12-6 12-14 12-16-2-16-10zM10 26c-2-2-6-2-8 0M38 22l8 6M20 38l-2 6M30 38l2 6M16 44h4M30 44h4"/><circle cx="34" cy="20" r="1" fill="currentColor"/>') },
+    uluru: { label: "Red rock", svg: m('<path d="M2 40c2-8 8-12 16-14 6-1 14-1 20 2 4 2 6 6 8 12zM12 30v6M20 27v8M28 27v8M36 30v6M2 44h44"/><circle cx="36" cy="10" r="4"/>') },
+    tiki: { label: "Tiki", svg: m('<path d="M14 44V10c0-4 4-6 10-6s10 2 10 6v34zM14 16h20M18 22h4M26 22h4M18 30h12M20 30v4M24 30v4M28 30v4M14 38h20"/>') },
+    wine: { label: "Wine", svg: m('<path d="M14 4h20c0 12-2 20-10 22-8-2-10-10-10-22zM24 26v14M16 42h16M14 12h20"/>') },
+    coffee: { label: "Coffee", svg: m('<path d="M10 16h24v8a12 12 0 0 1-12 12A12 12 0 0 1 10 24zM34 18h3a4 4 0 0 1 0 8h-4M4 40c6 4 30 4 36 0M18 10c-2-2 2-4 0-6M26 10c-2-2 2-4 0-6"/>') },
+    compass: { label: "Compass", svg: m('<circle cx="24" cy="24" r="19"/><path d="M24 8l5 16-5 16-5-16zM24 2v4M24 42v4M2 24h4M42 24h4"/><circle cx="24" cy="24" r="2" fill="currentColor"/>') },
+    globe: { label: "Globe", svg: m('<circle cx="24" cy="22" r="16"/><path d="M8 22h32M24 6c5 5 5 27 0 32M24 6c-5 5-5 27 0 32M11 13h26M11 31h26M24 38v4M16 44h16"/>') },
+    suitcase: { label: "Suitcase", svg: m('<rect x="6" y="14" width="36" height="26" rx="3"/><path d="M18 14V9a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v5M14 14v26M34 14v26M12 40v4M36 40v4"/>') },
+    camera: { label: "Camera", svg: m('<path d="M4 16h8l3-5h18l3 5h8v24H4z"/><circle cx="24" cy="27" r="8"/><circle cx="24" cy="27" r="3"/><path d="M36 20h3"/>') },
+    anchor: { label: "Cruise", svg: m('<circle cx="24" cy="8" r="4"/><path d="M24 12v32M14 20h20M6 30c0 8 8 14 18 14s18-6 18-14M6 30l-2 4M6 30l4 2M42 30l2 4M42 30l-4 2"/>') },
+    bike: { label: "Bicycle", svg: m('<circle cx="11" cy="32" r="8"/><circle cx="37" cy="32" r="8"/><path d="M11 32l8-14h12l6 14M19 18l5 14H11M24 32l7-14M17 14h6M31 18l-2-6h5"/>') },
+    fireworks: { label: "Festival", svg: m('<path d="M16 16V8M16 16l-6-5M16 16l7-5M16 16H8M16 16h8M16 16l-6 5M16 16l6 5M34 24v-6M34 24l5-4M34 24l-5-4M34 24h6M34 24h-6M34 24l4 4M34 24l-4 4M16 22l2 22M34 30l-4 14M4 44h40"/>') },
+    sun: { label: "Sunshine", svg: m('<circle cx="24" cy="22" r="8"/><path d="M24 4v5M24 35v5M6 22h5M37 22h5M11 9l3.5 3.5M33.5 31.5L37 35M37 9l-3.5 3.5M14.5 31.5L11 35M4 44c5-3 9-3 14 0s9 3 14 0 9-3 14 0"/>') },
+    heart: { label: "Romance", svg: m('<path d="M24 42S6 30 6 18a9 9 0 0 1 18-4 9 9 0 0 1 18 4c0 12-18 24-18 24z"/>') },
+    bag: { label: "Shopping", svg: m('<path d="M8 16h32l-3 28H11zM17 16v-4a7 7 0 0 1 14 0v4"/>') },
+    palette: { label: "Art", svg: m('<path d="M24 4C12 4 4 12 4 22c0 10 8 18 18 18 3 0 4-2 4-4s-2-3-2-5 2-3 5-3h5c5 0 8-3 8-8C42 11 34 4 24 4z"/><circle cx="14" cy="18" r="2.5"/><circle cx="22" cy="12" r="2.5"/><circle cx="31" cy="13" r="2.5"/><circle cx="12" cy="27" r="2.5"/>') },
+    howrah: { label: "Howrah Bridge", svg: m('<path d="M2 34h44M10 34V8M38 34V8M10 8l14 14 14-14M10 20l14-12 14 12M10 34l14-12 14 12M2 44c5-3 9-3 14 0s9 3 14 0 9-3 14 0"/>') },
+    vicmem: { label: "Memorial dome", svg: m('<path d="M4 44h40M6 44V30h36v14M10 30v-6h28v6M16 24c0-8 4-12 8-14 4 2 8 6 8 14M24 10V4M22 6h4M10 24v-4M38 24v-4M20 44v-8h8v8M12 34h4M32 34h4"/>') },
+    chariot: { label: "Stone chariot", svg: m('<path d="M12 30h24V16H12zM10 16h28M16 16c0-6 4-10 8-12 4 2 8 6 8 12M14 30l-4 10h28l-4-10"/><circle cx="16" cy="38" r="5"/><circle cx="32" cy="38" r="5"/><path d="M4 44h40"/>') },
+    wheel: { label: "Sun wheel", svg: m('<circle cx="24" cy="24" r="18"/><circle cx="24" cy="24" r="14"/><circle cx="24" cy="24" r="3"/><path d="M24 10v28M10 24h28M14 14l20 20M34 14L14 34"/>') },
+    caves: { label: "Caves", svg: m('<path d="M2 44V16c8-8 36-8 44 0v28M2 44h44M8 44V34a5 5 0 0 1 10 0v10M19 44V30a5 5 0 0 1 10 0v14M30 44V34a5 5 0 0 1 10 0v10M2 22h44"/>') },
+    archbridge: { label: "Arch bridge", svg: m('<path d="M2 32h44M6 32c4-16 32-16 36 0M12 32V22M18 32v-8M24 32v-9M30 32v-8M36 32V22M4 32v-8h4v8M40 32v-8h4v8M2 44c5-3 9-3 14 0s9 3 14 0 9-3 14 0"/>') },
+    atomium: { label: "Atomium", svg: m('<circle cx="24" cy="8" r="4"/><circle cx="10" cy="20" r="4"/><circle cx="38" cy="20" r="4"/><circle cx="24" cy="22" r="4"/><circle cx="14" cy="34" r="4"/><circle cx="34" cy="34" r="4"/><path d="M24 12v6M13 18l7 3M35 18l-7 3M16 31l6-6M32 31l-6-6M14 38l-4 6M34 38l4 6M6 44h36"/>') },
+    arc: { label: "Triumphal arch", svg: m('<path d="M6 44V12h36v32H30V30a6 6 0 0 0-12 0v14zM4 12h40M4 6h40v6H4zM6 20h6M36 20h6M2 44h44"/>') },
+    sailhotel: { label: "Sail hotel", svg: m('<path d="M14 44V4M14 4c14 6 22 20 22 40M14 12c8 4 14 12 16 22M14 24c5 3 8 8 9 14M10 10l4-2M4 44c5-3 9-3 14 0s9 3 14 0 9-3 14 0"/>') },
+    frame: { label: "Frame", svg: m('<path d="M10 44V4h28v40M16 44V12h16v32M10 4h28M10 12h28M4 44h40"/>') },
+    bell: { label: "Liberty Bell", svg: m('<path d="M24 4v4M20 8h8M14 32c0-14 2-22 10-22s10 8 10 22M10 32h28v4H10zM24 36v4M22 18l2 4-1 3 2 4"/><circle cx="24" cy="42" r="2"/>') },
+    brooklyn: { label: "Brooklyn Bridge", svg: m('<path d="M2 30h44M12 44V10h10v34M12 18c2-4 8-4 10 0v8H12zM2 30c4-4 8-12 10-20M22 10c6 10 14 18 24 20M26 30v-8M32 30v-6M38 30v-4M8 30v-6M2 44c5-3 9-3 14 0s9 3 14 0 9-3 14 0"/>') },
+    flatiron: { label: "Flatiron", svg: m('<path d="M8 44L18 6h4l18 38zM12 30h24M14 22h19M16 14h14M4 44h40"/>') },
+    moai: { label: "Moai", svg: m('<path d="M16 44V22c0-10 2-18 10-18s8 6 8 12l-2 4 2 4-2 2v18M18 16h12M22 28h10M20 36h10M12 44h26"/>') },
+    sphinx: { label: "Sphinx", svg: m('<path d="M2 44h44M6 44V32c0-4 4-6 8-6h14v-8l2-6c4-2 8-2 10 2l2 6-2 4v10h4v8M30 18h10M14 32h14"/>') },
+    clock: { label: "Astronomical clock", svg: m('<path d="M10 44V4h28v40"/><circle cx="24" cy="22" r="10"/><circle cx="24" cy="22" r="6"/><path d="M24 22l3-4M24 22V12M10 36h28M4 44h40"/>') },
+    phonebox: { label: "Phone box", svg: m('<path d="M12 44V8a4 4 0 0 1 4-4h16a4 4 0 0 1 4 4v36zM12 12h24M16 16h16v24H16zM16 24h16M16 32h16M24 16v24M8 44h32"/>') },
+    bus: { label: "Double-decker", svg: m('<rect x="6" y="6" width="36" height="32" rx="3"/><path d="M6 22h36M10 10h6v8h-6zM20 10h8v8h-8zM32 10h6v8h-6zM10 26h8v6h-8zM22 26h8v6h-8zM34 26h4v12"/><circle cx="14" cy="40" r="3"/><circle cx="34" cy="40" r="3"/>') },
+    tulip: { label: "Tulips", svg: m('<path d="M24 26v18M24 26c-6 0-10-4-10-12l4 4 6-10 6 10 4-4c0 8-4 12-10 12zM24 36c-4-6-10-6-14-4 4 0 10 2 14 8M24 36c4-6 10-6 14-4-4 0-10 2-14 8"/>') },
+    pizza: { label: "Pizza", svg: m('<path d="M4 10c12-6 28-6 40 0L24 44z"/><path d="M8 14c10-4 22-4 32 0"/><circle cx="18" cy="20" r="2.5"/><circle cx="28" cy="22" r="2.5"/><circle cx="23" cy="30" r="2.5"/>') },
+    taco: { label: "Tacos", svg: m('<path d="M4 36a20 20 0 0 1 40 0z"/><path d="M8 30c2-4 4-2 6-4s4 0 6-2 4 0 6-2 4 0 6 2 4 0 6 2M4 36h40"/>') },
+    sushi: { label: "Sushi", svg: m('<path d="M6 30c0-6 8-10 18-10s18 4 18 10v6c0 4-8 6-18 6S6 40 6 36z"/><path d="M6 30c0 4 8 6 18 6s18-2 18-6M14 22c4-4 16-4 20 0M38 6L18 26M42 10L22 30"/>') },
+    ramen: { label: "Noodles", svg: m('<path d="M4 24h40c0 10-8 18-20 18S4 34 4 24zM16 42h16M14 24c0-6 2-10 4-14M22 24c0-6 2-10 4-14M30 24c0-6 2-10 4-14M38 4L26 20M44 8L30 22"/>') },
+    icecream: { label: "Ice cream", svg: m('<path d="M14 22l10 22 10-22zM14 22a10 10 0 0 1 20 0M18 30l6-4 6 4"/>') },
+    stars: { label: "Night sky", svg: m('<path d="M30 6a16 16 0 1 0 12 26A14 14 0 0 1 30 6z"/><path d="M12 8l1.5 3 3 .5-2 2 .5 3-3-1.5-3 1.5.5-3-2-2 3-.5zM10 30l1 2 2 .3-1.5 1.4.4 2.2-1.9-1-1.9 1 .4-2.2L7 32.3l2-.3z"/>') },
+    rainbow: { label: "Rainbow", svg: m('<path d="M4 38a20 20 0 0 1 40 0M10 38a14 14 0 0 1 28 0M16 38a8 8 0 0 1 16 0M2 42c4-4 8-4 10 0zM36 42c2-4 8-4 10 0z"/>') },
+    lake: { label: "Lake", svg: m('<path d="M2 30l10-16 8 10 6-8 14 14zM2 34h44M8 40h14M28 38h12M14 44h20"/><circle cx="38" cy="8" r="3"/>') },
+    forest: { label: "Forest", svg: m('<path d="M10 44v-8M10 8L3 22h4L2 32h16l-5-10h4zM26 44v-6M26 4l-8 16h5l-6 12h18l-6-12h5zM40 44v-8M40 14l-5 10h3l-4 8h12l-4-8h3z"/>') },
+    iceberg: { label: "Glacier", svg: m('<path d="M2 28h44M8 28l8-16 6 6 6-12 10 22M10 28l6 14h14l8-14M2 28c4 2 6 2 8 0M38 28c2 2 4 2 8 0"/>') },
+    dunes: { label: "Dunes", svg: m('<path d="M2 36c8-10 18-12 26-6 6-6 12-6 18-2M2 44c10-8 22-8 30-2 4-2 10-2 14 0"/><circle cx="34" cy="12" r="5"/><path d="M10 26V16M10 18l-3-2M10 20l3-2"/>') },
+    flowers: { label: "Flower fields", svg: m('<circle cx="14" cy="16" r="3"/><circle cx="34" cy="12" r="3"/><circle cx="24" cy="24" r="3"/><path d="M14 13V9M14 19v4M11 16H7M17 16h4M34 9V5M34 15v4M31 12h-4M37 12h4M24 21v-4M24 27v4M21 24h-4M27 24h4M14 23v21M34 19v25M24 31v13M4 44h40"/>') },
+    dolphin: { label: "Dolphin", svg: m('<path d="M4 34c4-14 16-22 30-20l6-6 1 8c4 2 5 6 3 8-4-2-8-2-10 0 2 6-2 12-8 12l-2-6c-8-2-14 0-20 4z"/><circle cx="35" cy="19" r="1" fill="currentColor"/><path d="M2 44c5-3 9-3 14 0s9 3 14 0 9-3 14 0"/>') },
+    turtle: { label: "Sea turtle", svg: m('<ellipse cx="22" cy="24" rx="14" ry="10"/><path d="M12 20l10-4 10 4M12 28l10 4 10-4M22 14v20M36 22c4-2 8 0 8 3s-4 4-8 2M12 16l-4-4M12 32l-4 4M32 16l3-4M32 32l3 4"/>') },
+    eagle: { label: "Eagle", svg: m('<path d="M24 22c-6-8-14-12-22-12 6 4 10 8 12 14-4 0-6 2-8 4 6 0 10 0 14 2l4 8 4-8c4-2 8-2 14-2-2-2-4-4-8-4 2-6 6-10 12-14-8 0-16 4-22 12z"/><path d="M22 18c0-4 2-6 4-6l3 2-3 1"/>') },
+    bear: { label: "Bear", svg: m('<path d="M6 38V28c0-6 4-10 10-10h14c4 0 6-4 8-4 3 0 6 3 6 6s-2 4-4 5v13M10 38v6M16 38v6M30 38v6M38 38v6M36 12l2-4 2 4"/><circle cx="40" cy="18" r="1" fill="currentColor"/>') },
+    flamingo: { label: "Flamingo", svg: m('<path d="M24 26c-6 0-12-4-12-10 6 2 10 0 14-4 2-4 0-8-4-8-3 0-5 2-5 5M17 9l-4 3M24 26c6 0 10 4 10 8-6 0-10-2-12-6M22 30v14M22 36l-6 2"/>') },
+    tiger: { label: "Tiger", svg: m('<circle cx="24" cy="26" r="14"/><path d="M12 16l-2-8 8 4M36 16l2-8-8 4M24 12v6M18 14l2 4M30 14l-2 4M10 26h6M32 26h6M12 32h5M31 32h5M21 32h6l-3 3zM20 38c2 1 6 1 8 0"/><circle cx="19" cy="24" r="1.2" fill="currentColor"/><circle cx="29" cy="24" r="1.2" fill="currentColor"/>') },
+    peacock: { label: "Peacock", svg: m('<path d="M30 44V30c0-8 4-14 4-20 0-3-2-4-4-4l-3 2 3 1M30 30c-8 0-20-4-26-14 10 2 18 4 24 8M28 8l1-4M31 7l2-3M26 44h10"/><circle cx="10" cy="22" r="2"/><circle cx="16" cy="30" r="2"/><circle cx="8" cy="32" r="2"/><circle cx="20" cy="38" r="2"/>') },
+    kayak: { label: "Kayak", svg: m('<path d="M2 32c10 4 34 4 44 0-10-4-34-4-44 0z"/><circle cx="24" cy="20" r="3"/><path d="M24 23v7M10 14l28 20M8 12l4 3M36 33l4 3M2 42c5-3 9-3 14 0s9 3 14 0 9-3 14 0"/>') },
+    paraglide: { label: "Paragliding", svg: m('<path d="M4 16C10 6 38 6 44 16c-4-2-8-2-10 0-2-2-6-2-10 0-4-2-8-2-10 0-2-2-6-2-10 0z"/><path d="M6 15l16 17M18 13l5 19M30 13l-5 19M42 15L26 32"/><circle cx="24" cy="34" r="2"/><path d="M2 46l14-8 8 6 10-10 12 12"/>') },
+    fishing: { label: "Fishing", svg: m('<path d="M6 44L34 6M34 6l8 10M42 16v10M38 28c4 0 6 2 6 4s-2 4-6 4-6-4-6-4 2-4 6-4zM32 32l-3-3v6zM2 44h20"/>') },
+    golf: { label: "Golf", svg: m('<path d="M18 44V6l16 6-16 6M4 44c8-4 32-4 40 0"/><circle cx="32" cy="38" r="3"/>') },
+    football: { label: "Football", svg: m('<circle cx="24" cy="24" r="18"/><path d="M24 15l7 5-3 8h-8l-3-8zM24 15V6M31 20l8-3M28 28l5 7M20 28l-5 7M17 20l-8-3"/>') },
+    cricket: { label: "Cricket", svg: m('<path d="M30 4l6 6-18 22-6-6zM12 26l-8 8 4 4 8-8"/><circle cx="36" cy="36" r="5"/><path d="M33 33l6 6"/>') },
+    mic: { label: "Live music", svg: m('<rect x="18" y="4" width="12" height="22" rx="6"/><path d="M12 20a12 12 0 0 0 24 0M24 32v8M16 44h16M18 12h4M18 18h4"/>') },
+    theatre: { label: "Theatre", svg: m('<path d="M4 8h18v12c0 6-4 10-9 10S4 26 4 20zM26 18h18v12c0 6-4 10-9 10s-9-4-9-10zM9 14h2M15 14h2M9 22c2 2 6 2 8 0M31 24h2M37 24h2M31 34c2-2 6-2 8 0"/>') },
+    campfire: { label: "Campfire", svg: m('<path d="M24 6c6 6 8 12 4 18 4-2 6-6 6-8 4 6 2 14-10 16-12-2-14-10-10-16 0 2 2 6 6 8-4-6-2-12 4-18zM8 44l32-6M40 44L8 38"/>') },
+    binoculars: { label: "Binoculars", svg: m('<circle cx="13" cy="32" r="8"/><circle cx="35" cy="32" r="8"/><path d="M8 26l4-16h6l2 14M40 26l-4-16h-6l-2 14M21 26h6M20 14h8"/>') },
+    map: { label: "Map", svg: m('<path d="M4 10l12-4 16 4 12-4v32l-12 4-16-4-12 4zM16 6v32M32 10v32M20 22c2-4 6-4 8 0s-4 8-4 8-4-4-4-8z"/>') },
+    ferry: { label: "Ferry", svg: m('<path d="M4 32h40l-4 8H8zM10 32v-8h26v8M14 24v-6h16v6M20 18v-6h4v6M14 28h4M22 28h4M30 28h4M2 46c5-3 9-3 14 0s9 3 14 0 9-3 14 0"/>') },
+    motorbike: { label: "Motorbike", svg: m('<circle cx="10" cy="34" r="7"/><circle cx="38" cy="34" r="7"/><path d="M10 34l8-12h10l4 6h6M18 22l-2-6h-4M28 22l4-6h4M24 34h-6l-4-8M32 28l6 6"/>') },
+    onsen: { label: "Hot spring", svg: m('<path d="M6 30c0 8 8 12 18 12s18-4 18-12zM4 30h40M16 24c-3-3 3-6 0-10M24 24c-3-3 3-6 0-10M32 24c-3-3 3-6 0-10"/>') },
+    rocket: { label: "Space", svg: m('<path d="M24 4c8 6 10 16 8 26H16c-2-10 0-20 8-26z"/><circle cx="24" cy="18" r="3"/><path d="M16 30l-6 6 2 6 6-6M32 30l6 6-2 6-6-6M20 34c0 4 2 8 4 10 2-2 4-6 4-10"/>') },
+    classiccar: { label: "Classic car", svg: m('<path d="M4 32v-6l6-2 6-8h14l6 8 6 2v6zM16 16l-3 8M30 16l3 8M2 32h44M2 44h44"/><circle cx="12" cy="34" r="4"/><circle cx="36" cy="34" r="4"/>') },
+    halfdome: { label: "Half Dome", svg: m('<path d="M2 44V30c0-14 8-24 20-24 6 0 8 4 8 10v28M30 44l6-12 10 12M2 44h44M8 38c4-2 8-2 12 0"/>') },
+    hibiscus: { label: "Hibiscus", svg: m('<circle cx="24" cy="22" r="3"/><path d="M24 19c-4-6-2-13 2-14 4 2 2 8-2 14zM27 22c6-3 13-1 13 3-2 4-8 3-13-3zM26 25c3 6 1 13-3 13-3-3-1-9 3-13zM22 25c-5 4-12 4-13 0 1-4 8-4 13 0zM21 21c-5-4-7-11-4-13 4 0 6 7 4 13zM24 22l10-6M24 38v6"/>') },
+    cowboy: { label: "Cowboy hat", svg: m('<path d="M4 30c4 4 12 6 20 6s16-2 20-6c-2 4-8 8-20 8S6 34 4 30zM12 30c0-8 2-18 6-18 3 0 4 3 6 3s3-3 6-3c4 0 6 10 6 18M12 26c8 2 16 2 24 0"/>') },
+    mask: { label: "Carnival mask", svg: m('<path d="M4 18c6-4 14-4 20 2 6-6 14-6 20-2-2 10-6 16-12 16-4 0-6-4-8-4s-4 4-8 4c-6 0-10-6-12-16z"/><path d="M12 22c2-2 6-2 8 0M28 22c2-2 6-2 8 0M24 20V8M20 6c2 2 6 2 8 0M38 30l6 12"/>') },
+    canalhouses: { label: "Canal houses", svg: m('<path d="M4 44V18l5-6 5 6v26M14 44V14l5-8 5 8v30M24 44V20l5-6 5 6v24M34 44V16l5-8 5 8v28M7 24h4M17 20h4M27 26h4M37 22h4M7 32h4M17 30h4M27 34h4M37 32h4M2 44h44"/>') },
+    matterhorn: { label: "Matterhorn", svg: m('<path d="M2 44l12-14 8-6 6-18 4 6 4 10 10 22zM28 6l-4 14 4 4 2-10M2 44h44"/>') },
+    shamrock: { label: "Shamrock", svg: m('<circle cx="18" cy="16" r="7"/><circle cx="30" cy="16" r="7"/><circle cx="24" cy="27" r="7"/><path d="M24 30c0 6 2 10 6 14"/>') },
+    croissant: { label: "Croissant", svg: m('<path d="M4 30c2-10 10-16 20-16s18 6 20 16c-4-2-6-2-8 0-2-4-6-6-12-6s-10 2-12 6c-2-2-4-2-8 0zM16 18l2 8M24 14v10M32 18l-2 8"/>') },
+    fan: { label: "Flamenco fan", svg: m('<path d="M24 40L6 16c10-10 26-10 36 0zM24 40L14 10M24 40V8M24 40L34 10M6 16c6-2 10 0 12 0s6-2 12-2 8 2 12 2"/><circle cx="24" cy="40" r="2"/>') },
+    matryoshka: { label: "Nesting doll", svg: m('<path d="M24 4c-5 0-8 4-8 9 0 3 1 5 2 6-4 3-6 8-6 14 0 7 5 11 12 11s12-4 12-11c0-6-2-11-6-14 1-1 2-3 2-6 0-5-3-9-8-9z"/><circle cx="24" cy="12" r="4"/><path d="M18 30c2 4 10 4 12 0M20 24h8"/>') },
+    geyser: { label: "Geyser", svg: m('<path d="M20 44c0-12 2-24 4-36 2 12 4 24 4 36M16 20c-4-2-8 0-10 4M32 20c4-2 8 0 10 4M18 10c-2-2-6-2-8 0M30 10c2-2 6-2 8 0M2 44c6-4 14-4 20-2h4c6-2 14-2 20 2"/>') },
+    snakeboat: { label: "Snake boat", svg: m('<path d="M2 32c10 2 30 2 38-2 2-6 4-14 6-22-4 6-6 10-10 14-10 2-24 2-34 6zM8 30v-6M14 30v-6M20 29v-6M26 28v-6M2 42c5-3 9-3 14 0s9 3 14 0 9-3 14 0"/>') },
+    church: { label: "Old church", svg: m('<path d="M8 44V22l8-8 8 8v22M24 44V18h16v26M16 14V6M13 9h6M28 18v-8h8v8M32 10V4M30 6h4M14 44v-8a2 2 0 0 1 4 0v8M30 28h4M4 44h40"/>') },
+    sigiriya: { label: "Lion Rock", svg: m('<path d="M8 44V22c0-10 6-16 16-16s16 6 16 16v22M14 18h20M12 26h24M2 44h44M18 44V34h12v10"/>') },
+    villa: { label: "Overwater villa", svg: m('<path d="M4 24l10-10 10 10M28 24l8-10 8 10M6 24v8h16v-8M30 24v8h12v-8M10 32v6M18 32v6M34 32v6M40 32v6M2 38h44M2 44c5-3 9-3 14 0s9 3 14 0 9-3 14 0"/>') },
+    prayerflags: { label: "Prayer flags", svg: m('<path d="M2 10c14 10 30 10 44 0M6 13l2 8 5-6M14 16l1 8 5-5M22 17v8l5-5M30 16l-1 8 5-6M38 14l-2 8 5-6M2 44l14-16 8 8 8-10 14 18z"/>') },
+    junk: { label: "Junk boat", svg: m('<path d="M6 34h36l-4 6H10zM14 34V8M30 34V6M14 8c6 4 8 14 8 24h-8M30 6c6 4 10 16 10 28H30M14 14h8M14 20h8M14 26h8M30 12h8M30 20h9M30 28h10M2 46c5-3 9-3 14 0s9 3 14 0 9-3 14 0"/>') },
+    taipei: { label: "Pagoda tower", svg: m('<path d="M24 2v6M20 8h8l-2 6h-4zM18 14h12l-2 6h-8zM17 20h14l-2 6H19zM16 26h16l-2 6H18zM15 32h18l-2 6H17zM14 38h20v6H14zM8 44h32"/>') },
+    pearltower: { label: "Pearl tower", svg: m('<path d="M24 2v8"/><circle cx="24" cy="14" r="4"/><circle cx="24" cy="28" r="7"/><path d="M24 18v3M22 35l-8 9M26 35l8 9M24 35v9M10 44h28M17 30l-7 14M31 30l7 14"/>') },
+    bullettrain: { label: "Bullet train", svg: m('<path d="M2 34h36c6 0 8-4 8-6s-4-8-14-10H2zM2 26h34M8 22h6M18 22h6M2 40h44"/><circle cx="10" cy="36" r="2"/><circle cx="28" cy="36" r="2"/>') },
+    longtail: { label: "Longtail boat", svg: m('<path d="M2 30c10 4 30 4 40-4l4-12c-2 6-6 10-10 12-10 2-24 2-34 4zM10 30l2-8h16l2 8M36 22l8-10M2 42c5-3 9-3 14 0s9 3 14 0 9-3 14 0"/>') },
+    yurt: { label: "Yurt", svg: m('<path d="M4 44V30c0-2 8-10 20-14 12 4 20 12 20 14v14M4 30h40M18 44V34a6 6 0 0 1 12 0v10M24 16v-6M20 10h8M2 44h44"/>') },
+    lamp: { label: "Lantern lamp", svg: m('<path d="M24 4v4M20 8h8M16 14c0-4 4-6 8-6s8 2 8 6c0 6-4 10-8 12-4-2-8-6-8-12zM16 14h16M18 20h12M24 26v4M20 30h8l-2 8h-4zM18 40h12M14 44h20"/>') },
+    zebra: { label: "Zebra", svg: m('<path d="M8 30c0-8 6-12 14-12h10l6-6 4 2-2 6 2 4-4 2v4c0 2-2 4-4 4H14l-2 2v10M12 44v-8M20 36v8M30 34v10M36 34v10M16 22v12M22 20v14M28 20v14"/><circle cx="38" cy="16" r="1" fill="currentColor"/>') },
+    rhino: { label: "Rhino", svg: m('<path d="M4 38V28c0-8 6-12 14-12h12c4 0 6 2 8 4l2-6 2 6 4 4-2 2-6 2-2 4v6M10 38v6M16 38v6M30 38v6M34 38v6M30 22l2-4"/><circle cx="34" cy="22" r="1" fill="currentColor"/>') },
+    tagine: { label: "Tagine", svg: m('<path d="M8 36h32M6 40h36l-4 4H10zM12 36c0-10 6-20 12-28 6 8 12 18 12 28M24 4v4"/><circle cx="24" cy="4" r="1.5"/>') },
+    koala: { label: "Koala", svg: m('<circle cx="24" cy="26" r="12"/><circle cx="11" cy="16" r="6"/><circle cx="37" cy="16" r="6"/><ellipse cx="24" cy="28" rx="4" ry="5"/><circle cx="19" cy="22" r="1.2" fill="currentColor"/><circle cx="29" cy="22" r="1.2" fill="currentColor"/><path d="M18 38l-2 6M30 38l2 6"/>') },
+    hammock: { label: "Hammock", svg: m('<path d="M6 8v36M42 8v36M6 18c6 12 30 12 36 0M6 18c6 8 30 8 36 0M2 44h44M10 4L6 8M38 4l4 4"/>') },
+    sunglasses: { label: "Sunglasses", svg: m('<path d="M2 18h44M6 18v6a7 7 0 0 0 14 0v-6M28 18v6a7 7 0 0 0 14 0v-6M20 22c2-2 6-2 8 0M2 40c5-3 9-3 14 0s9 3 14 0 9-3 14 0"/>') },
+    passport: { label: "Passport", svg: m('<rect x="10" y="4" width="28" height="40" rx="3"/><circle cx="24" cy="20" r="7"/><path d="M17 20h14M24 13c3 3 3 11 0 14M24 13c-3 3-3 11 0 14M16 34h16M18 38h12"/>') },
+    cathedral: { label: "Cathedral", svg: m('<path d="M6 44V18l4-12 4 12v26M34 44V18l4-12 4 12v26M14 44V26h20v18M14 26l10-10 10 10M24 16v-6M22 12h4M20 44v-6a4 4 0 0 1 8 0v6M2 44h44"/><circle cx="24" cy="26" r="3"/>') },
+    kite: { label: "Kite", svg: m('<path d="M24 4l14 16-14 16-14-16zM24 4v32M10 20h28M24 36c-2 4 2 6 0 10M22 40l-3 1M26 43l3 1"/>') },
+    chili: { label: "Chili", svg: m('<path d="M30 10c-2-4-6-4-8-2M28 12c6 2 8 8 6 14-3 10-14 16-26 16 10-4 16-12 16-20 0-6 2-10 4-10z"/>') },
+    diya: { label: "Diya", svg: m('<path d="M6 30c4 8 32 8 36 0zM6 30h36M40 30l6-4M24 26c-4-4-4-10 0-16 4 6 4 12 0 16zM14 40h20"/>') },
+    plane:     { label: "Plane",       svg: m('<path d="M44 8c-2-2-5-1-7 1l-7 7-18-5-4 4 14 9-6 6-6-1-3 3 7 4 4 7 3-3-1-6 6-6 9 14 4-4-5-18 7-7c2-2 3-5 1-7z"/>') },
+  };
+  const MOTIF_RULES = [
+    ["classiccar", /\b(havana|cuba)\b/],
+    ["halfdome", /\b(yosemite)\b/],
+    ["hibiscus", /\b(hawaii|honolulu|hnl|maui|oahu|kauai)\b/],
+    ["cowboy", /\b(dallas|fort worth|wyoming|montana|rodeo|calgary)\b/],
+    ["mask", /\b(new orleans|msy|mardi gras|rio carnival)\b/],
+    ["canalhouses", /\b(amsterdam|ams)\b/],
+    ["matterhorn", /\b(zermatt|matterhorn)\b/],
+    ["shamrock", /\b(ireland|dublin|dub|galway)\b/],
+    ["fan", /\b(seville|sevilla|madrid|mad|andalusia|granada)\b/],
+    ["geyser", /\b(geysir|old faithful|rotorua)\b/],
+    ["snakeboat", /\b(kerala|kochi|cochin|cok)\b/],
+    ["church", /\b(old goa|panjim)\b/],
+    ["sigiriya", /\b(sigiriya|dambulla)\b/],
+    ["villa", /\b(maldives|mle|bora bora)\b/],
+    ["prayerflags", /\b(nepal|kathmandu|pokhara|leh|ladakh)\b/],
+    ["junk", /\b(hong kong|hkg)\b/],
+    ["taipei", /\b(taipei|taiwan|tpe)\b/],
+    ["pearltower", /\b(shanghai|pvg)\b/],
+    ["longtail", /\b(krabi|phi phi|railay|koh \w+)\b/],
+    ["yurt", /\b(mongolia|ulaanbaatar|kyrgyzstan)\b/],
+    ["zebra", /\b(etosha|namibia)\b/],
+    ["rhino", /\b(kaziranga|chitwan)\b/],
+    ["tagine", /\b(fes|fez|chefchaouen|essaouira)\b/],
+    ["koala", /\b(koala|lone pine)\b/],
+    ["cathedral", /\b(cologne|koln|milan|notre dame|chartres|strasbourg)\b/],
+    ["kite", /\b(ahmedabad|gujarat|uttarayan)\b/],
+    ["diya", /\b(diwali|ayodhya)\b/],
+    ["howrah", /\b(kolkata|calcutta|ccu|howrah)\b/],
+    ["vicmem", /\b(victoria memorial)\b/],
+    ["chariot", /\b(hampi|vijayanagara)\b/],
+    ["wheel", /\b(konark|puri|odisha|bhubaneswar)\b/],
+    ["caves", /\b(ajanta|ellora|aurangabad|elephanta|caves)\b/],
+    ["archbridge", /\b(harbour bridge)\b/],
+    ["atomium", /\b(brussels|bru)\b/],
+    ["sailhotel", /\b(burj al arab|jumeirah)\b/],
+    ["frame", /\b(dubai frame)\b/],
+    ["bell", /\b(philadelphia|philly|phl)\b/],
+    ["brooklyn", /\b(brooklyn|dumbo)\b/],
+    ["moai", /\b(easter island|rapa nui)\b/],
+    ["sphinx", /\b(luxor|aswan)\b/],
+    ["clock", /\b(prague|prg)\b/],
+    ["tulip", /\b(keukenhof|lisse)\b/],
+    ["pizza", /\b(naples|napoli|nap)\b/],
+    ["taco", /\b(oaxaca|guadalajara|tijuana)\b/],
+    ["sushi", /\b(osaka|kix|tsukiji)\b/],
+    ["ramen", /\b(sapporo|fukuoka)\b/],
+    ["lake", /\b(lake tahoe|tahoe|lake como|como|bled|pangong|lake district)\b/],
+    ["forest", /\b(black forest|redwood\w*|sequoia|olympic)\b/],
+    ["iceberg", /\b(greenland|glacier\w*|svalbard|el calafate)\b/],
+    ["dunes", /\b(sahara|merzouga|dunes)\b/],
+    ["flowers", /\b(valley of flowers|kaas|provence)\b/],
+    ["dolphin", /\b(hilton head|kaikoura|dolphin\w*)\b/],
+    ["flamingo", /\b(aruba|bonaire|curacao|flamingo)\b/],
+    ["tiger", /\b(tadoba|kanha|bandhavgarh|ranthambore|sundarbans|pench|tiger)\b/],
+    ["bear", /\b(yellowstone|grand teton|anchorage|katmai)\b/],
+    ["paraglide", /\b(bir billing|bir|paragliding)\b/],
+    ["golf", /\b(st andrews|pebble beach|augusta)\b/],
+    ["football", /\b(manchester|anfield|old trafford|camp nou)\b/],
+    ["cricket", /\b(lords|lord's|eden gardens|wankhede)\b/],
+    ["theatre", /\b(broadway|west end)\b/],
+    ["onsen", /\b(beppu|onsen)\b/],
+    ["rocket", /\b(cape canaveral|kennedy space|houston|nasa|hou)\b/],
+    ["mayan", /\b(chichen itza|yucatan|merida|teotihuacan|guatemala|tikal|mexico city|cdmx)\b/],
+    ["machu", /\b(machu picchu|cusco|cuzco|peru|lima)\b/],
+    ["mission", /\b(san antonio|alamo|santa barbara)\b/],
+    ["totem", /\b(victoria bc|haida gwaii|ketchikan)\b/],
+    ["parrot", /\b(costa rica|amazon|manaus|panama|belize|galapagos)\b/],
+    ["llama", /\b(bolivia|la paz|atacama|ecuador|quito|chile|santiago)\b/],
+    ["penguin", /\b(antarctica|ushuaia|falklands)\b/],
+    ["sagrada", /\b(barcelona|bcn)\b/],
+    ["brandenburg", /\b(berlin|ber)\b/],
+    ["onion", /\b(moscow|russia|st petersburg|kremlin)\b/],
+    ["bluedome", /\b(santorini|oia|jtr)\b/],
+    ["gondola", /\b(venice|venezia|vce)\b/],
+    ["chalet", /\b(interlaken|lucerne|grindelwald|austria|innsbruck|salzburg|hallstatt|vienna)\b/],
+    ["beer", /\b(oktoberfest|munich|muc|brussels|bruges|belgium)\b/],
+    ["stonehenge", /\b(stonehenge|salisbury|bath|cotswolds)\b/],
+    ["viking", /\b(oslo|bergen|stockholm|copenhagen|cph|sweden|denmark)\b/],
+    ["fuji", /\b(fuji|mt fuji|hakone|kawaguchiko)\b/],
+    ["torii", /\b(kyoto|nara|hiroshima|miyajima)\b/],
+    ["greatwall", /\b(beijing|pek|great wall|china)\b/],
+    ["angkor", /\b(siem reap|angkor|cambodia|phnom penh)\b/],
+    ["twintowers", /\b(kuala lumpur|kul|malaysia|penang)\b/],
+    ["mbs", /\b(singapore|sin)\b/],
+    ["lantern", /\b(hoi an|vietnam|hanoi|ho chi minh|saigon|da nang)\b/],
+    ["terraces", /\b(banaue|sapa|philippines|manila|ubud)\b/],
+    ["goldentemple", /\b(amritsar|atq|golden temple)\b/],
+    ["dhow", /\b(zanzibar|mombasa|lamu|qatar)\b/],
+    ["panda", /\b(chengdu|sichuan)\b/],
+    ["baligate", /\b(bali|dps|denpasar|seminyak|canggu)\b/],
+    ["tablemtn", /\b(cape town|cpt|south africa|johannesburg)\b/],
+    ["baobab", /\b(madagascar|senegal|dakar)\b/],
+    ["giraffe", /\b(serengeti|masai mara|tanzania|nairobi)\b/],
+    ["lion", /\b(gir|sasan gir|kruger|botswana|ranthambore)\b/],
+    ["petra", /\b(petra|jordan|amman|wadi musa)\b/],
+    ["uluru", /\b(uluru|ayers rock|alice springs|outback)\b/],
+    ["kangaroo", /\b(australia|perth|adelaide|brisbane|gold coast)\b/],
+    ["kiwi", /\b(new zealand|queenstown|wellington|christchurch|rotorua)\b/],
+    ["tiki", /\b(tahiti|fiji|bora bora|polynesia|samoa|cook islands)\b/],
+    ["wine", /\b(napa|sonoma|bordeaux|nashik|champagne|mendoza|douro|wine)\b/],
+    ["coffee", /\b(chikmagalur|colombia|bogota|medellin|ethiopia)\b/],
+    ["charminar", /\b(hyderabad|hyd|secunderabad)\b/],
+    ["hawamahal", /\b(jaipur|jai|udaipur|jodhpur|pink city|mysore|mysuru)\b/],
+    ["qutub",     /\b(qutub|mehrauli)\b/],
+    ["stupa",     /\b(bodh gaya|sanchi|sarnath|dharamshala|mcleod ganj|mcleodganj|lumbini|tawang)\b/],
+    ["redeemer",  /\b(rio|rio de janeiro|brazil|gig)\b/],
+    ["capitol",   /\b(washington|d\.?c\.?|dca|iad)\b/],
+    ["stlarch",   /\b(st\.? louis|stl)\b/],
+    ["castle2",   /\b(scotland|edinburgh|germany|munich|bavaria|neuschwanstein|ireland|dublin|wales)\b/],
+    ["aurora",    /\b(iceland|reykjavik|kef|alaska|fairbanks|yellowknife|northern lights)\b/],
+    ["whale",     /\b(juneau|ketchikan|whale)\b/],
+    ["volcano",   /\b(etna|sicily|big island|volcano)\b/],
+    ["waterfall", /\b(niagara|victoria falls|iguazu|dudhsagar|athirappilly|jog falls)\b/],
+    ["canyon",    /\b(grand canyon|utah|zion|moab|antelope|bryce|monument valley)\b/],
+    ["coral",     /\b(havelock|cairns|great barrier|scuba|snorkel\w*)\b/],
+    ["tent",      /\b(camping|camp|spiti|rishikesh)\b/],
+    ["train",     /\b(darjeeling|shimla|toy train|matheran)\b/],
+    ["tea",       /\b(munnar|assam|tea garden|nuwara eliya)\b/],
+    ["camel",     /\b(jaisalmer|thar|pushkar|wadi rum)\b/],
+    ["ferris",    /\b(london eye|navy pier|santa monica pier|singapore flyer)\b/],
+    ["opera",     /\b(sydney|syd)\b/],
+    ["needle",    /\b(seattle|sea|toronto|yyz|cn tower|auckland)\b/],
+    ["colosseum", /\b(rome|roma|fco|colosseum)\b/],
+    ["pisa",      /\b(pisa|florence|tuscany)\b/],
+    ["windmill",  /\b(amsterdam|ams|netherlands|holland)\b/],
+    ["minaret",   /\b(istanbul|turkey|muscat|oman|morocco|marrakech|abu dhabi)\b/],
+    ["gopuram",   /\b(madurai|chennai|maa|tamil nadu|rameshwaram|tirupati|kanchipuram|thanjavur|mahabalipuram)\b/],
+    ["houseboat", /\b(alleppey|alappuzha|kumarakom|backwaters|srinagar|dal lake)\b/],
+    ["elephant",  /\b(jaipur|jai|thekkady|coorg|wayanad|jim corbett|kaziranga|sri lanka|kandy|kruger|kenya|safari)\b/],
+    ["rickshaw",  /\b(varanasi|banaras|amritsar|old delhi|kolkata|ccu)\b/],
+    ["snow",      /\b(gulmarg|auli|whistler|lapland|finland|norway|tromso|ski)\b/],
+    ["surf",      /\b(san diego|malibu|huntington|byron bay|uluwatu|surf)\b/],
+    ["sailboat",  /\b(santorini|mykonos|croatia|dubrovnik|monaco|amalfi|annapolis|newport|sail)\b/],
+    ["balloon",   /\b(cappadocia|albuquerque)\b/],
+    ["cactus",    /\b(arizona|tucson|texas|el paso|new mexico|sedona|joshua tree)\b/],
+    ["guitar",    /\b(nashville|austin|memphis|new orleans|msy)\b/],
+    ["maple",     /\b(canada|montreal|ottawa|quebec|vancouver|niagara)\b/],
+    ["tram",      /\b(lisbon|lis|porto|prague)\b/],
+    ["liberty",   /\b(new york|nyc|manhattan|brooklyn|jfk|lga|ewr)\b/],
+    ["hollywood", /\b(los angeles|hollywood|l\.?a\.?|lax|beverly hills|santa monica)\b/],
+    ["castle",    /\b(orlando|disney\w*|universal|mco|anaheim|magic kingdom|epcot)\b/],
+    ["palm",      /\b(miami|mia|beach|goa|maldives|bali|hawaii|honolulu|maui|cancun|tulum|phuket|andaman|caribbean|bahamas|key west|keys|puerto rico|san juan|lakshadweep|pondicherry|kerala|varkala|gokarna)\b/],
+    ["bridge",    /\b(san francisco|sf|sfo|golden gate|bay area)\b/],
+    ["dice",      /\b(las vegas|vegas|las|lv|macau|atlantic city)\b/],
+    ["eiffel",    /\b(paris|par|cdg)\b/],
+    ["bigben",    /\b(london|lon|lhr|westminster)\b/],
+    ["gateway",   /\b(mumbai|bombay|bom|delhi|new delhi|del|india gate)\b/],
+    ["taj",       /\b(agra|taj|lucknow|hyderabad|hyd)\b/],
+    ["burj",      /\b(dubai|dxb|abu dhabi|doha|kuala lumpur|kl)\b/],
+    ["pyramid",   /\b(egypt|cairo|giza|jaisalmer|rajasthan|jaipur|sahara|arizona|phoenix|sedona)\b/],
+    ["pagoda",    /\b(tokyo|kyoto|osaka|japan|china|beijing|shanghai|bangkok|thailand|seoul|korea|vietnam|hanoi|nepal|kathmandu|bhutan)\b/],
+    ["mountain",  /\b(alps|switzerland|swiss|zermatt|denver|colorado|aspen|banff|manali|shimla|kashmir|leh|ladakh|himalaya\w*|everest|darjeeling|munnar|ooty|rockies|yosemite|patagonia|iceland|nainital|sikkim)\b/],
+    ["columns",   /\b(rome|athens|greece|italy|acropolis|hampi|petra)\b/],
+    ["lighthouse",/\b(maine|cape cod|portland|nova scotia|lighthouse)\b/],
+    ["coaster",   /\b(six flags|cedar point|theme park|imagica|adlabs|essel world)\b/],
+    ["skyline",   /\b(chicago|boston|seattle|toronto|hong kong|singapore|sydney|melbourne|atlanta|dallas|houston|philadelphia|bengaluru|bangalore|pune|chennai|kolkata)\b/],
+    ["peacock", /\b(india|bharat)\b/],
+    ["taco", /\b(mexico)\b/],
+    ["phonebox", /\b(uk|united kingdom|england|britain)\b/],
+    ["arc", /\b(france)\b/],
+    ["sagrada", /\b(spain)\b/],
+    ["baligate", /\b(indonesia)\b/],
+    ["eagle", /\b(usa|united states|america)\b/],
+  ];
+  // Full-color stamp themes: shape, sky, sun, ground, icon and ribbon colors per speciality.
+  const THEMES = {
+    liberty:   { shape: "arch",    sky: ["#79cbe3", "#e2f6fa"], sun: "#ffd166", ground: "sea",   gc: "#2a7fb8", icon: "#2f8f83", ribbon: "#c0392b", accent: "#2a7f78" },
+    palm:      { shape: "circle",  sky: ["#ff8c5a", "#ffd27a"], sun: "#ff4f5e", ground: "sea",   gc: "#16a3b5", icon: "#1d5c3a", ribbon: "#0f6e7a", accent: "#0f6e7a" },
+    castle:    { shape: "shield",  sky: ["#24164f", "#7b4bb7"], sun: "#fff3c4", ground: "hill",  gc: "#3d8a5a", icon: "#ffd6ea", ribbon: "#e84393", accent: "#6c3fb0", stars: 1 },
+    hollywood: { shape: "ticket",  sky: ["#17172b", "#3d2f63"], sun: "#f7c948", ground: "hill",  gc: "#a8742f", icon: "#f7c948", ribbon: "#d62828", accent: "#b3261e", stars: 1 },
+    gateway:   { shape: "octagon", sky: ["#ff9f45", "#ffe2a6"], sun: "#ff6a3d", ground: "sea",   gc: "#1e6091", icon: "#7a3b1f", ribbon: "#1e6091", accent: "#1e6091" },
+    taj:       { shape: "arch",    sky: ["#f7b7c8", "#fde7ea"], sun: "#ffd6a5", ground: "sea",   gc: "#6bb5c9", icon: "#5b3f6b", ribbon: "#6d597a", accent: "#6d597a" },
+    bridge:    { shape: "postage", sky: ["#ffc999", "#d4ebf2"], sun: "#ff9e5e", ground: "sea",   gc: "#2b6f97", icon: "#c0392b", ribbon: "#2b6f97", accent: "#b3361f" },
+    eiffel:    { shape: "postage", sky: ["#a8d8ea", "#f4f7f8"], sun: "#ffd166", ground: "hill",  gc: "#7fb069", icon: "#3d405b", ribbon: "#e63946", accent: "#3d405b" },
+    bigben:    { shape: "hex",     sky: ["#8fa3b8", "#dfe5ec"], sun: "#f6d365", ground: "sea",   gc: "#4a5d73", icon: "#1d3557", ribbon: "#c1121f", accent: "#1d3557" },
+    burj:      { shape: "postage", sky: ["#f4a261", "#fde4c3"], sun: "#e76f51", ground: "sand",  gc: "#e9c46a", icon: "#264653", ribbon: "#2a9d8f", accent: "#264653" },
+    dice:      { shape: "ticket",  sky: ["#0d0221", "#5a1a8c"], sun: null,      ground: "hill",  gc: "#2b1055", icon: "#ff2e88", ribbon: "#00a6d6", accent: "#a4106a", stars: 1 },
+    pagoda:    { shape: "circle",  sky: ["#ffc7d6", "#fff1f3"], sun: "#e63946", ground: "hill",  gc: "#74c69d", icon: "#9d0208", ribbon: "#1d3557", accent: "#9d0208" },
+    mountain:  { shape: "postage", sky: ["#5fb3f5", "#e7f5ff"], sun: "#ffd43b", ground: "hill",  gc: "#2f9e44", icon: "#1c3d5a", ribbon: "#1c3d5a", accent: "#1c3d5a" },
+    skyline:   { shape: "postage", sky: ["#3a56d4", "#4cc9f0"], sun: "#f72585", ground: "hill",  gc: "#3a0ca3", icon: "#ffffff", ribbon: "#f72585", accent: "#3a0ca3", halo: "#1b1b3a" },
+    lighthouse:{ shape: "circle",  sky: ["#90e0ef", "#e3f8fb"], sun: "#ffd166", ground: "sea",   gc: "#0077b6", icon: "#d62828", ribbon: "#023e8a", accent: "#023e8a" },
+    columns:   { shape: "hex",     sky: ["#f5d9a8", "#fefae0"], sun: "#dda15e", ground: "hill",  gc: "#606c38", icon: "#283618", ribbon: "#bc6c25", accent: "#606c38" },
+    pyramid:   { shape: "octagon", sky: ["#ffb703", "#ffe8a3"], sun: "#fb8500", ground: "sand",  gc: "#e9c46a", icon: "#8d5524", ribbon: "#023047", accent: "#8d5524" },
+    coaster:   { shape: "ticket",  sky: ["#8ecae6", "#e0fbfc"], sun: "#ffb703", ground: "hill",  gc: "#52b788", icon: "#e63946", ribbon: "#6a4c93", accent: "#6a4c93" },
+    food:      { shape: "circle",  sky: ["#ffd8c7", "#fff5ee"], sun: null,      ground: "sand",  gc: "#f4a261", icon: "#9c2c2c", ribbon: "#2a9d8f", accent: "#9c2c2c" },
+    cocktail:  { shape: "octagon", sky: ["#240046", "#5a189a"], sun: "#ffd166", ground: "hill",  gc: "#3c096c", icon: "#f9c74f", ribbon: "#f72585", accent: "#5a189a", stars: 1 },
+    tree:      { shape: "arch",    sky: ["#bfe8cb", "#ecf9ef"], sun: "#ffd166", ground: "hill",  gc: "#2d6a4f", icon: "#1b4332", ribbon: "#40916c", accent: "#2d6a4f" },
+    car:       { shape: "ticket",  sky: ["#fcbf49", "#fde8b6"], sun: "#f77f00", ground: "road",  gc: "#495057", icon: "#d62828", ribbon: "#003049", accent: "#003049" },
+    empire:    { shape: "arch" }, ferris: { shape: "circle" }, opera: { shape: "postage" }, needle: { shape: "arch" },
+    colosseum: { shape: "octagon" }, pisa: { shape: "arch" }, windmill: { shape: "arch" }, minaret: { shape: "arch" },
+    gopuram:   { shape: "shield" }, elephant: { shape: "octagon" }, rickshaw: { shape: "ticket" }, houseboat: { shape: "circle" },
+    sailboat:  { shape: "circle" }, surf: { shape: "circle" }, balloon: { shape: "arch" }, snow: { shape: "hex" },
+    cactus:    { shape: "ticket" }, guitar: { shape: "ticket" }, maple: { shape: "shield" }, tram: { shape: "ticket" },
+    charminar: { shape: "octagon" }, hawamahal: { shape: "arch" }, qutub: { shape: "arch" }, lotus: { shape: "circle" },
+    stupa:     { shape: "circle" }, redeemer: { shape: "arch" }, capitol: { shape: "shield" }, stlarch: { shape: "arch" },
+    castle2:   { shape: "shield" }, aurora: { shape: "hex" }, volcano: { shape: "hex" }, waterfall: { shape: "postage" },
+    canyon:    { shape: "postage" }, whale: { shape: "circle" }, coral: { shape: "circle" }, tent: { shape: "hex" },
+    train:     { shape: "ticket" }, tea: { shape: "circle" }, camel: { shape: "octagon" }, stadium: { shape: "ticket" },
+    umbrella:  { shape: "circle" },
+    mayan: { shape: "arch" }, machu: { shape: "postage" }, mission: { shape: "arch" }, totem: { shape: "ticket" }, cablecar: { shape: "ticket" }, parrot: { shape: "circle" }, llama: { shape: "octagon" }, penguin: { shape: "hex" }, sagrada: { shape: "arch" }, brandenburg: { shape: "postage" }, onion: { shape: "shield" }, towerbridge: { shape: "postage" }, bluedome: { shape: "circle" }, gondola: { shape: "circle" }, chalet: { shape: "shield" }, beer: { shape: "circle" }, stonehenge: { shape: "postage" }, viking: { shape: "hex" }, fuji: { shape: "circle" }, torii: { shape: "postage" }, greatwall: { shape: "postage" }, angkor: { shape: "octagon" }, twintowers: { shape: "arch" }, mbs: { shape: "postage" }, lantern: { shape: "circle" }, terraces: { shape: "postage" }, goldentemple: { shape: "shield" }, dhow: { shape: "circle" }, panda: { shape: "circle" }, sakura: { shape: "circle" }, baligate: { shape: "arch" }, tablemtn: { shape: "postage" }, baobab: { shape: "octagon" }, giraffe: { shape: "octagon" }, lion: { shape: "circle" }, petra: { shape: "arch" }, kangaroo: { shape: "hex" }, kiwi: { shape: "circle" }, uluru: { shape: "postage" }, tiki: { shape: "ticket" }, wine: { shape: "circle" }, coffee: { shape: "circle" }, compass: { shape: "circle" }, globe: { shape: "circle" }, suitcase: { shape: "ticket" }, camera: { shape: "postage" }, anchor: { shape: "circle" }, bike: { shape: "ticket" }, fireworks: { shape: "hex" }, sun: { shape: "circle" }, heart: { shape: "shield" }, bag: { shape: "ticket" }, palette: { shape: "circle" },
+    howrah: { shape: "postage" }, vicmem: { shape: "arch" }, chariot: { shape: "octagon" }, wheel: { shape: "circle" }, caves: { shape: "hex" }, archbridge: { shape: "postage" }, atomium: { shape: "hex" }, arc: { shape: "postage" }, sailhotel: { shape: "arch" }, frame: { shape: "ticket" }, bell: { shape: "shield" }, brooklyn: { shape: "postage" }, flatiron: { shape: "arch" }, moai: { shape: "hex" }, sphinx: { shape: "octagon" }, clock: { shape: "arch" }, phonebox: { shape: "ticket" }, bus: { shape: "ticket" }, tulip: { shape: "circle" }, pizza: { shape: "circle" }, taco: { shape: "circle" }, sushi: { shape: "circle" }, ramen: { shape: "circle" }, icecream: { shape: "shield" }, stars: { shape: "circle" }, rainbow: { shape: "arch" }, lake: { shape: "postage" }, forest: { shape: "arch" }, iceberg: { shape: "hex" }, dunes: { shape: "octagon" }, flowers: { shape: "circle" }, dolphin: { shape: "circle" }, turtle: { shape: "circle" }, eagle: { shape: "shield" }, bear: { shape: "hex" }, flamingo: { shape: "circle" }, tiger: { shape: "octagon" }, peacock: { shape: "shield" }, kayak: { shape: "ticket" }, paraglide: { shape: "arch" }, fishing: { shape: "circle" }, golf: { shape: "shield" }, football: { shape: "circle" }, cricket: { shape: "shield" }, mic: { shape: "ticket" }, theatre: { shape: "ticket" }, campfire: { shape: "hex" }, binoculars: { shape: "octagon" }, map: { shape: "postage" }, ferry: { shape: "circle" }, motorbike: { shape: "ticket" }, onsen: { shape: "circle" }, rocket: { shape: "arch" },
+    classiccar: { shape: "ticket" }, halfdome: { shape: "rounded" }, hibiscus: { shape: "seal" }, cowboy: { shape: "pentagon" }, mask: { shape: "seal" }, canalhouses: { shape: "wavy" }, matterhorn: { shape: "pentagon" }, shamrock: { shape: "seal" }, croissant: { shape: "oval" }, fan: { shape: "banner" }, matryoshka: { shape: "oval" }, geyser: { shape: "hexv" }, snakeboat: { shape: "banner" }, church: { shape: "arch" }, sigiriya: { shape: "rounded" }, villa: { shape: "wavy" }, prayerflags: { shape: "banner" }, junk: { shape: "seal" }, taipei: { shape: "arch" }, pearltower: { shape: "arch" }, bullettrain: { shape: "ticket" }, longtail: { shape: "wavy" }, yurt: { shape: "pentagon" }, lamp: { shape: "hexv" }, zebra: { shape: "octagon" }, rhino: { shape: "hexv" }, tagine: { shape: "seal" }, koala: { shape: "oval" }, hammock: { shape: "wavy" }, sunglasses: { shape: "rounded" }, passport: { shape: "tag" }, cathedral: { shape: "arch" }, kite: { shape: "hexv" }, chili: { shape: "oval" }, diya: { shape: "seal" },
+    plane:     { shape: "postage", sky: ["#4ea8de", "#cfeaff"], sun: "#ffd166", ground: "cloud", gc: "#ffffff", icon: "#1d3557", ribbon: "#e63946", accent: "#1d3557" },
+  };
+  const SHAPE_LABELS = { arch: "Arch", circle: "Round", shield: "Shield", ticket: "Ticket", octagon: "Octagon", hex: "Hexagon", postage: "Postage", seal: "Seal", wavy: "Scalloped", oval: "Oval", rounded: "Rounded", pentagon: "Pentagon", tag: "Luggage tag", banner: "Pennant", hexv: "Lozenge" };
+  const SHAPES = {
+    arch:    "M22 232V96a78 78 0 0 1 156 0v136z",
+    circle:  "M100 22a98 98 0 1 1 0 196a98 98 0 1 1 0-196z",
+    shield:  "M100 8l84 28v82c0 62-44 98-84 114c-40-16-84-52-84-114V36z",
+    ticket:  "M14 14h172v72a16 16 0 0 0 0 32v108H14V118a16 16 0 0 0 0-32z",
+    octagon: "M66 10h68l50 50v120l-50 50H66l-50-50V60z",
+    hex:     "M100 6l86 50v128l-86 50l-86-50V56z",
+    postage: "M14 14h172v212H14z",
+    seal:    (() => { let d = ""; for (let i = 0; i <= 112; i++) { const a = i / 112 * Math.PI * 2, r = 91 + 5 * Math.cos(28 * a); d += (i ? "L" : "M") + (100 + r * Math.sin(a)).toFixed(1) + " " + (120 - r * Math.cos(a)).toFixed(1); } return d + "z"; })(),
+    wavy:    "M14 14" + "a7.17 7.17 0 0 1 14.33 0".repeat(12) + "a7.07 7.07 0 0 1 0 14.13".repeat(15) + "a7.17 7.17 0 0 1 -14.33 0".repeat(12) + "a7.07 7.07 0 0 1 0 -14.13".repeat(15) + "z",
+    oval:    "M100 10a88 110 0 1 1 0 220a88 110 0 1 1 0-220z",
+    rounded: "M42 14h116a28 28 0 0 1 28 28v156a28 28 0 0 1-28 28H42a28 28 0 0 1-28-28V42a28 28 0 0 1 28-28z",
+    pentagon:"M100 8l92 66-34 156H42L8 74z",
+    tag:     "M62 10h124v220H62L14 182V58z",
+    banner:  "M16 8h168v224l-84-30-84 30z",
+    hexv:    "M52 12h96l46 108-46 108H52L6 120z",
+  };
+
+  // ---- Generated shape library (about 300 outlines in the 200x240 stamp box) ----
+  const PERF = { postage: 10.5 };
+  const SHAPE_FAMILY = {};
+  Object.keys(SHAPES).forEach(k => SHAPE_FAMILY[k] = "Classic");
+  (() => {
+    const F = v => (+v).toFixed(1);
+    const P = (x, y) => F(x) + " " + F(y);
+    const add = (key, label, fam, d, perf) => { SHAPES[key] = d; SHAPE_LABELS[key] = label; SHAPE_FAMILY[key] = fam; if (perf) PERF[key] = perf; };
+    const polar = (f, N) => { let d = ""; for (let i = 0; i < N; i++) { const a = i / N * Math.PI * 2, r = f(a); d += (i ? "L" : "M") + P(100 + 92 * r * Math.sin(a), 120 - 112 * r * Math.cos(a)); } return d + "z"; };
+    const poly = pts => "M" + pts.map(([x, y]) => P(x, y)).join("L") + "z";
+    const polarPts = (rs, n, off = 0) => rs.map((r, i) => { const a = (i + off) / n * Math.PI * 2; return [100 + 92 * r * Math.sin(a), 120 - 112 * r * Math.cos(a)]; });
+    const rr = r => { r = Math.min(r, 86); return `M${14 + r} 14H${186 - r}A${r} ${r} 0 0 1 186 ${14 + r}V${226 - r}A${r} ${r} 0 0 1 ${186 - r} 226H${14 + r}A${r} ${r} 0 0 1 14 ${226 - r}V${14 + r}A${r} ${r} 0 0 1 ${14 + r} 14z`; };
+    const chamfer = c => poly([[14 + c, 14], [186 - c, 14], [186, 14 + c], [186, 226 - c], [186 - c, 226], [14 + c, 226], [14, 226 - c], [14, 14 + c]]);
+
+    for (let n = 5; n <= 16; n++) for (const o of [0, 1]) add(`poly-${n}-${o}`, `${n} sides${o ? " · flat" : ""}`, "Polygon", poly(polarPts(Array(n).fill(1), n, o ? .5 : 0)));
+    for (let n = 12; n <= 60; n += 4) for (const [dep, nm] of [[.03, "soft"], [.06, "medium"], [.09, "deep"]]) add(`seal-${n}-${nm}`, `Seal ${n} · ${nm}`, "Seal", polar(a => 1 - dep * (.5 - .5 * Math.cos(n * a)), n * 8));
+    for (let n = 12; n <= 48; n += 4) for (const [dep, nm] of [[.06, "short"], [.12, "long"]]) add(`burst-${n}-${nm}`, `Sunburst ${n} · ${nm}`, "Sunburst", poly(polarPts(Array.from({ length: 2 * n }, (_, i) => i % 2 ? 1 - dep : 1), 2 * n)));
+    for (let n = 8; n <= 30; n += 2) { const pts = []; for (let i = 0; i < n; i++) { for (const [o, r] of [[-.5, .86], [-.28, 1], [.28, 1], [.5, .86]]) { const a = (i + o * .5) / n * Math.PI * 2; pts.push([100 + 92 * r * Math.sin(a), 120 - 112 * r * Math.cos(a)]); } } add(`gear-${n}`, `Gear ${n}`, "Gear", poly(pts)); }
+    for (let k = 5; k <= 16; k++) for (const [dep, nm] of [[.12, "soft"], [.22, "bold"]]) add(`flower-${k}-${nm}`, `Flower ${k} · ${nm}`, "Flower", polar(a => 1 - dep + dep * Math.abs(Math.cos(k * a / 2)), k * 24));
+    for (const p of [2.5, 3, 4, 5, 6, 8, 12]) { const pts = []; for (let i = 0; i < 160; i++) { const t = i / 160 * Math.PI * 2, s = Math.sin(t), c = Math.cos(t); pts.push([100 + 86 * Math.sign(s) * Math.abs(s) ** (2 / p), 120 - 106 * Math.sign(c) * Math.abs(c) ** (2 / p)]); } add(`squircle-${p}`, `Squircle ${p}`, "Square", poly(pts)); }
+    for (let r = 8; r <= 96; r += 8) add(`rounded-${r}`, `Rounded ${r}`, "Square", rr(r));
+    for (let c = 10; c <= 70; c += 10) add(`chamfer-${c}`, `Clipped corners ${c}`, "Square", chamfer(c));
+    for (let r = 10; r <= 60; r += 10) add(`scoop-${r}`, `Scooped corners ${r}`, "Square", `M${14 + r} 14H${186 - r}A${r} ${r} 0 0 0 186 ${14 + r}V${226 - r}A${r} ${r} 0 0 0 ${186 - r} 226H${14 + r}A${r} ${r} 0 0 0 14 ${226 - r}V${14 + r}A${r} ${r} 0 0 0 ${14 + r} 14z`);
+    for (let r = 8; r <= 32; r += 4) for (const k of [1, 2, 3]) {
+      let d = "M14 14H186";
+      for (let i = 1; i <= k; i++) { const y = 14 + 212 * i / (k + 1); d += `V${F(y - r)}A${r} ${r} 0 0 0 186 ${F(y + r)}`; }
+      d += "V226H14";
+      for (let i = k; i >= 1; i--) { const y = 14 + 212 * i / (k + 1); d += `V${F(y + r)}A${r} ${r} 0 0 0 14 ${F(y - r)}`; }
+      add(`ticket-${r}-${k}`, `Ticket ${k} notch${k > 1 ? "es" : ""} · ${r}`, "Ticket", d + "z");
+    }
+    for (let n = 6; n <= 20; n += 2) for (const [h, nm] of [[4, "gentle"], [8, "bold"]]) {
+      const m = Math.round(n * 212 / 172), cw = 172 / n, ch = 212 / m, R = c => ((h * h + (c / 2) ** 2) / (2 * h)).toFixed(2);
+      add(`wave-${n}-${nm}`, `Wavy ${n} · ${nm}`, "Wavy", "M14 14" + `A${R(cw)} ${R(cw)} 0 0 1 `.replace(/$/, "") .slice(0, 0) +
+        Array.from({ length: n }, (_, i) => `A${R(cw)} ${R(cw)} 0 0 1 ${F(14 + cw * (i + 1))} 14`).join("") +
+        Array.from({ length: m }, (_, i) => `A${R(ch)} ${R(ch)} 0 0 1 186 ${F(14 + ch * (i + 1))}`).join("") +
+        Array.from({ length: n }, (_, i) => `A${R(cw)} ${R(cw)} 0 0 1 ${F(186 - cw * (i + 1))} 226`).join("") +
+        Array.from({ length: m }, (_, i) => `A${R(ch)} ${R(ch)} 0 0 1 14 ${F(226 - ch * (i + 1))}`).join("") + "z");
+    }
+    const perfBases = { rect: ["Rectangle", "M14 14h172v212H14z"], rounded: ["Rounded", rr(28)], circle: ["Round", "M100 22a98 98 0 1 1 0 196a98 98 0 1 1 0-196z"], oval: ["Oval", "M100 10a88 110 0 1 1 0 220a88 110 0 1 1 0-220z"], octagon: ["Octagon", chamfer(40)], hexagon: ["Hexagon", poly(polarPts(Array(6).fill(1), 6))] };
+    for (const [bk, [bl, d]] of Object.entries(perfBases)) for (const [sp, nm] of [[8, "fine"], [10.5, "classic"], [14, "wide"]]) { if (bk === "rect" && sp === 10.5) continue; add(`perf-${bk}-${nm}`, `Perforated ${bl.toLowerCase()} · ${nm}`, "Perforated", d, sp); }
+    for (const ry of [40, 60, 100, 120]) add(`arch-round-${ry}`, `Round arch ${ry}`, "Arch", `M22 232V${14 + ry}A78 ${ry} 0 0 1 178 ${14 + ry}V232z`);
+    add("arch-flat", "Low arch", "Arch", "M14 232V60Q100 -2 186 60V232z");
+    for (const R of [90, 110, 140, 180]) add(`arch-pointed-${R}`, `Pointed arch ${R}`, "Arch", `M22 232V110A${R} ${R} 0 0 1 100 14A${R} ${R} 0 0 1 178 110V232z`);
+    add("arch-horseshoe", "Horseshoe arch", "Arch", "M40 232V150A80 80 0 1 1 160 150V232z");
+    add("arch-keyhole", "Keyhole", "Arch", "M100 12a64 64 0 0 1 46 108L180 232H20L54 120A64 64 0 0 1 100 12z");
+    for (const ys of [70, 100, 130, 160]) add(`shield-heater-${ys}`, `Heater shield ${ys}`, "Shield", `M16 14H184V${ys}C184 ${ys + 60} 140 216 100 232C60 216 16 ${ys + 60} 16 ${ys}z`);
+    for (const ys of [100, 120, 140]) add(`shield-round-${ys}`, `Round shield ${ys}`, "Shield", `M16 14H184V${ys}A84 ${232 - ys} 0 0 1 16 ${ys}z`);
+    add("shield-crown", "Crowned shield", "Shield", "M16 14L58 30 100 14 142 30 184 14V120c0 62-44 98-84 112C56 218 16 182 16 120z");
+    add("shield-curve", "Curved-top shield", "Shield", "M16 22Q100 2 184 22V120c0 62-44 98-84 112C56 218 16 182 16 120z");
+    add("shield-badge", "Badge shield", "Shield", "M40 14H160A24 24 0 0 0 184 38V130c0 52-40 86-84 102C56 216 16 182 16 130V38A24 24 0 0 0 40 14z");
+    for (const dp of [10, 20, 40, 50, 60]) add(`banner-${dp}`, `Pennant ${dp}`, "Banner", `M16 8h168v224l-84-${dp}-84 ${dp}z`);
+    for (const dp of [10, 20, 30, 40]) add(`ribbon-${dp}`, `Ribbon ${dp}`, "Banner", `M16 8l84 ${dp} 84-${dp}v224l-84-${dp}-84 ${dp}z`);
+    for (const c of [20, 30, 40, 50, 60]) add(`tag-both-${c}`, `Tag ${c}`, "Tag", poly([[14 + c, 10], [186 - c, 10], [186, 10 + c], [186, 230], [14, 230], [14, 10 + c]]));
+    for (const c of [24, 36, 60]) add(`tag-left-${c}`, `Side tag ${c}`, "Tag", poly([[14 + c, 10], [186, 10], [186, 230], [14 + c, 230], [14, 230 - c], [14, 10 + c]]));
+    for (const rx of [70, 76, 82, 94]) add(`ellipse-${rx}`, `Ellipse ${rx}`, "Round", `M100 10a${rx} 110 0 1 1 0 220a${rx} 110 0 1 1 0-220z`);
+    add("egg", "Egg", "Round", polar(a => 1 - .08 * Math.cos(a), 160));
+    for (const p of [20, 30, 40, 58]) add(`lozenge-${p}`, `Lozenge ${p}`, "Lozenge", poly([[14 + p, 12], [186 - p, 12], [194, 120], [186 - p, 228], [14 + p, 228], [6, 120]]));
+    for (const p of [20, 40]) add(`lozenge-v-${p}`, `Tall lozenge ${p}`, "Lozenge", poly([[100, 6], [186, 6 + p], [186, 234 - p], [100, 234], [14, 234 - p], [14, 6 + p]]));
+    for (let n = 5; n <= 12; n++) add(`star-${n}`, `Star badge ${n}`, "Star", poly(polarPts(Array.from({ length: 2 * n }, (_, i) => i % 2 ? .8 : 1), 2 * n)));
+    for (const c of [10, 20, 30, 40]) add(`notch-${c}`, `Notched corners ${c}`, "Square", `M${14 + c} 14H${186 - c}V${14 + c}H186V${226 - c}H${186 - c}V226H${14 + c}V${226 - c}H14V${14 + c}H${14 + c}z`);
+    for (const t of [8, 12, 16]) add(`deco-${t}`, `Art deco ${t}`, "Square", poly([[14 + 2 * t, 14], [186 - 2 * t, 14], [186 - 2 * t, 14 + t], [186 - t, 14 + t], [186 - t, 14 + 2 * t], [186, 14 + 2 * t], [186, 226 - 2 * t], [186 - t, 226 - 2 * t], [186 - t, 226 - t], [186 - 2 * t, 226 - t], [186 - 2 * t, 226], [14 + 2 * t, 226], [14 + 2 * t, 226 - t], [14 + t, 226 - t], [14 + t, 226 - 2 * t], [14, 226 - 2 * t], [14, 14 + 2 * t], [14 + t, 14 + 2 * t], [14 + t, 14 + t], [14 + 2 * t, 14 + t]]));
+    let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    for (let b = 1; b <= 20; b++) { const terms = [2, 3, 4, 5].map(k => [k, (rnd() - .5) * .07, rnd() * 6.28]); add(`blob-${b}`, `Ink blot ${b}`, "Blob", polar(a => .95 + terms.reduce((s, [k, amp, ph]) => s + amp * Math.cos(k * a + ph), 0), 180)); }
+  })();
+  const SHAPE_FAMILIES = [...new Set(Object.values(SHAPE_FAMILY))];
+  const INKS = [
+    { k: "navy", label: "Navy", c: "#1f3a5f" }, { k: "olive", label: "Olive", c: "#4b5d23" }, { k: "steel", label: "Steel blue", c: "#2f6690" },
+    { k: "slate", label: "Slate", c: "#3d4f5c" }, { k: "oxblood", label: "Oxblood", c: "#7a2621" }, { k: "teal", label: "Teal", c: "#0f6e7a" },
+    { k: "forest", label: "Forest", c: "#2d6a4f" }, { k: "mustard", label: "Mustard", c: "#8a6a10" }, { k: "rust", label: "Rust", c: "#a5401b" },
+    { k: "brick", label: "Brick", c: "#9c2c2c" }, { k: "plum", label: "Plum", c: "#5b3f6b" }, { k: "indigo", label: "Indigo", c: "#3a3f8f" },
+    { k: "charcoal", label: "Charcoal", c: "#2b2d30" }, { k: "black", label: "Jet black", c: "#111214" }, { k: "graphite", label: "Graphite", c: "#4a4f55" },
+    { k: "cobalt", label: "Cobalt", c: "#2349a8" }, { k: "ocean", label: "Ocean", c: "#165a8a" }, { k: "turquoise", label: "Turquoise", c: "#0b7f8a" },
+    { k: "emerald", label: "Emerald", c: "#1b7a5a" }, { k: "pine", label: "Pine", c: "#1f4d3a" }, { k: "sage", label: "Sage", c: "#55704f" },
+    { k: "khaki", label: "Khaki", c: "#6b6235" }, { k: "bronze", label: "Bronze", c: "#8c6a2f" }, { k: "copper", label: "Copper", c: "#9b4a26" },
+    { k: "saddle", label: "Saddle brown", c: "#7b4a1e" }, { k: "crimson", label: "Crimson", c: "#b4233c" }, { k: "burgundy", label: "Burgundy", c: "#6d1a36" },
+    { k: "rose", label: "Rose", c: "#a33b5b" }, { k: "magenta", label: "Magenta", c: "#a1306b" }, { k: "violet", label: "Violet", c: "#5b3fb0" },
+    { k: "midnight", label: "Midnight", c: "#1c2541" }, { k: "prussian", label: "Prussian blue", c: "#003153" }, { k: "denim", label: "Denim", c: "#3b5b8c" },
+    { k: "lapis", label: "Lapis", c: "#26619c" }, { k: "petrol", label: "Petrol", c: "#1e4e5f" }, { k: "deepteal", label: "Deep teal", c: "#0d5c63" },
+    { k: "jade", label: "Jade", c: "#00796b" }, { k: "hunter", label: "Hunter green", c: "#355e3b" }, { k: "moss", label: "Moss", c: "#556b2f" },
+    { k: "avocado", label: "Avocado", c: "#4f6d1b" }, { k: "ochre", label: "Ochre", c: "#9c6b12" }, { k: "amber", label: "Amber", c: "#a86b00" },
+    { k: "tan", label: "Tan", c: "#8b6b4a" }, { k: "terracotta", label: "Terracotta", c: "#a0472c" }, { k: "chocolate", label: "Chocolate", c: "#5a3825" },
+    { k: "espresso", label: "Espresso", c: "#3e2a20" }, { k: "cherry", label: "Cherry", c: "#9b111e" }, { k: "raspberry", label: "Raspberry", c: "#9d2752" },
+    { k: "berry", label: "Berry", c: "#7b2d5b" }, { k: "wine", label: "Wine", c: "#722f37" }, { k: "eggplant", label: "Eggplant", c: "#4b2c4a" },
+    { k: "orchid", label: "Orchid", c: "#8a3f8f" }, { k: "lavender", label: "Lavender", c: "#6b5ca5" }, { k: "gunmetal", label: "Gunmetal", c: "#2c3539" },
+    { k: "stone", label: "Stone", c: "#6e6658" },
+  ];
+  // Custom colours are darkened if needed so stamps and trip pages stay readable on the light background.
+  const readableInk = hex => {
+    let [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+    const lum = () => [r, g, b].map(v => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; }).reduce((a, v, i) => a + v * [.2126, .7152, .0722][i], 0);
+    for (let n = 0; n < 40 && lum() > .16; n++) { r *= .92; g *= .92; b *= .92; }
+    return "#" + [r, g, b].map(v => Math.round(v).toString(16).padStart(2, "0")).join("");
+  };
+  const isHex = v => /^#[0-9a-f]{6}$/i.test(v || "");
+  const inkOf = p => isHex(p.ink) ? readableInk(p.ink) : (INKS.find(i => i.k === p.ink) || INKS[hash(p.id + p.code) % 5]).c;
+  let stampSeq = 0;
+  // Rubber-stamp style in one ink colour; the outline shape comes from the place's speciality.
+  function stampArt(p, coverId, n) {
+    const k = motifOf(p), t = THEMES[k] || THEMES.plane, id = "s" + (++stampSeq);
+    const shapeKey = SHAPES[p.shape] ? p.shape : t.shape, shape = SHAPES[shapeKey];
+    const inner = `transform="translate(100 120) scale(.88) translate(-100 -120)"`;
+    const icon = MOTIFS[k].svg.replace(/^<svg[^>]*>/, "").replace(/<\/svg>$/, "");
+    const label = esc((p.name || "").toUpperCase()).slice(0, 22);
+    const sub = esc(((p.when || p.country || "") + "").toUpperCase()).slice(0, 18);
+    const outer = PERF[shapeKey]
+      ? `<path d="${shape}" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-dasharray="0 ${PERF[shapeKey]}"/>`
+      : `<path d="${shape}" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>`;
+    return `<svg viewBox="0 0 200 240" aria-hidden="true">
+      <defs><clipPath id="${id}c"><path d="${shape}"/></clipPath>
+        <linearGradient id="${id}f" x1="0" y1="0" x2="0" y2="1"><stop offset=".3" stop-color="#000" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".7"/></linearGradient></defs>
+      ${coverId ? `<g class="peek" clip-path="url(#${id}c)"><image href="${src(coverId)}" x="0" y="0" width="200" height="240" preserveAspectRatio="xMidYMid slice"/><rect width="200" height="240" fill="url(#${id}f)"/></g>` : ""}
+      ${outer}
+      <path d="${shape}" ${inner} fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <g transform="translate(66.4 48) scale(1.4)" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" color="currentColor">${icon}</g>
+      <text class="code-t" x="100" y="156" text-anchor="middle" fill="currentColor">${esc(p.code)}</text>
+      <text class="name-t" x="100" y="176" text-anchor="middle" fill="currentColor">${label}</text>
+      <text class="sub-t" x="100" y="193" text-anchor="middle" fill="currentColor">${n ? plural(n, "photo") : sub || "no photos yet"}</text>
+    </svg>`;
+  }
+  const VIBE_MOTIF = { sunsets: "sun", stargazing: "stars", camping: "campfire", skiing: "snow", diving: "coral", safari: "giraffe", temples: "gopuram", museums: "columns", streetfood: "ramen", finedining: "wine", concerts: "mic", sports: "football", luxury: "sailhotel", backpacking: "map", honeymoon: "heart", pilgrimage: "stupa", trekking: "mountain", boating: "sailboat", lakes: "lake", waterfalls: "waterfall", biking: "motorbike", nightsky: "lantern", rainforest: "parrot", roadside: "car", adventure: "compass", history: "columns", wildlife: "lion", desert: "camel", snow: "snow", island: "umbrella", hiking: "tent", water: "surf", cruise: "anchor", spiritual: "lotus", wellness: "sun", themepark: "castle", wine: "wine", shopping: "bag", art: "palette", festival: "fireworks", photography: "camera", cycling: "bike", romantic: "heart", family: "coaster", friends: "globe", solo: "compass", work: "suitcase", beach: "palm", mountains: "mountain", city: "skyline", nature: "tree", food: "food", culture: "columns", roadtrip: "car", nightlife: "cocktail" };
+  const motifOf = p => {
+    if (p.motif && MOTIFS[p.motif]) return p.motif;
+    const hay = ` ${[p.name, p.code, p.country].join(" ").toLowerCase()} `;
+    for (const [k, re] of MOTIF_RULES) if (re.test(hay)) return k;
+    const v = (p.vibes || []).find(v => VIBE_MOTIF[v]);
+    return v ? VIBE_MOTIF[v] : "plane";
+  };
+  const VIBES = {
+    city:      { label: "City",      icon: svg('<path d="M3 21h18M5 21V9l5-3v15M10 21V4l6 3v14M16 21v-9h3v9"/>') },
+    beach:     { label: "Beach",     icon: svg('<path d="M2 18c2 0 2-1.5 4-1.5S8 18 10 18s2-1.5 4-1.5 2 1.5 4 1.5 2-1.5 4-1.5"/><circle cx="17" cy="7" r="3"/>') },
+    mountains: { label: "Mountains", icon: svg('<path d="m3 20 6-11 4 7 2-3 6 7z"/>') },
+    nature:    { label: "Nature",    icon: svg('<path d="M12 22v-6M7 16h10l-5-12z"/>') },
+    food:      { label: "Food",      icon: svg('<path d="M7 3v8a2 2 0 0 0 2 2v8M5 3v5M9 3v5M17 3c-2 2-2 6 0 8v10"/>') },
+    culture:   { label: "Culture",   icon: svg('<path d="M3 21h18M4 10h16M12 3 3 8h18zM6 10v8M10 10v8M14 10v8M18 10v8"/>') },
+    roadtrip:  { label: "Road trip", icon: svg('<rect x="3" y="8" width="18" height="8" rx="2"/><circle cx="7.5" cy="17" r="1.6"/><circle cx="16.5" cy="17" r="1.6"/><path d="M6 8l2-3h8l2 3"/>') },
+    nightlife: { label: "Nightlife", icon: svg('<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>') },
+    adventure: { label: "Adventure", icon: svg('<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>') },
+    history: { label: "History", icon: svg('<path d="M6 3h12M6 21h12M7 3c0 5 10 7 10 9s-10 4-10 9M17 3c0 5-10 7-10 9s10 4 10 9"/>') },
+    wildlife: { label: "Wildlife", icon: svg('<circle cx="7" cy="9" r="2"/><circle cx="12" cy="6" r="2"/><circle cx="17" cy="9" r="2"/><path d="M12 12c-4 0-6 4-6 6 0 2 2 3 6 2 4 1 6 0 6-2 0-2-2-6-6-6z"/>') },
+    desert: { label: "Desert", icon: svg('<path d="M10 21V6a2 2 0 0 1 4 0v15M10 14H7a2 2 0 0 1-2-2V9M14 11h3a2 2 0 0 0 2-2V7M4 21h16"/>') },
+    snow: { label: "Snow", icon: svg('<path d="M12 2v20M3.3 7l17.4 10M3.3 17L20.7 7M9 4l3 2 3-2M9 20l3-2 3 2"/>') },
+    island: { label: "Island", icon: svg('<path d="M2 20c3-2 5-2 8 0s5 2 8 0 3-1 4 0M11 18c0-5 0-9-2-12M9 6c-3-2-6-1-7 1 2-1 5 0 7 1M9 6c2-3 6-3 8-1-2 0-5 0-7 2"/>') },
+    hiking: { label: "Hiking", icon: svg('<path d="M3 20l6-10 4 6 2-3 6 7zM9 10V3l4 2-4 2"/>') },
+    water: { label: "Water sports", icon: svg('<path d="M2 12c2-2 4-2 6 0s4 2 6 0 4-2 6 0M2 18c2-2 4-2 6 0s4 2 6 0 4-2 6 0M2 6c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>') },
+    cruise: { label: "Cruise", icon: svg('<circle cx="12" cy="5" r="2"/><path d="M12 7v14M7 11h10M4 15c0 4 4 6 8 6s8-2 8-6"/>') },
+    spiritual: { label: "Spiritual", icon: svg('<path d="M12 5c-3 3-3 8 0 12 3-4 3-9 0-12zM12 17c-4-1-7-4-8-9 4 0 7 4 8 9zM12 17c4-1 7-4 8-9-4 0-7 4-8 9zM5 20h14"/>') },
+    wellness: { label: "Wellness", icon: svg('<path d="M5 19c0-8 6-14 15-15 0 9-6 15-14 15zM5 19l8-8"/>') },
+    themepark: { label: "Theme parks", icon: svg('<circle cx="12" cy="10" r="7"/><path d="M12 3v14M5 10h14M12 12l-4 9M12 12l4 9"/>') },
+    wine: { label: "Wine", icon: svg('<path d="M7 3h10c0 6-1 9-5 10-4-1-5-4-5-10zM12 13v7M8 21h8"/>') },
+    shopping: { label: "Shopping", icon: svg('<path d="M5 8h14l-1.5 13h-11zM9 8V6a3 3 0 0 1 6 0v2"/>') },
+    art: { label: "Art", icon: svg('<path d="M12 3a9 9 0 0 0 0 18c1.5 0 2-1 2-2s-1-1.5-1-2.5 1-1.5 2.5-1.5H18a3 3 0 0 0 3-3c0-5-4-9-9-9z"/><circle cx="8" cy="10" r="1.2"/><circle cx="12" cy="7" r="1.2"/><circle cx="16" cy="9" r="1.2"/>') },
+    festival: { label: "Festival", icon: svg('<path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/>') },
+    photography: { label: "Photography", icon: svg('<path d="M3 8h4l2-3h6l2 3h4v11H3z"/><circle cx="12" cy="13" r="3.5"/>') },
+    cycling: { label: "Cycling", icon: svg('<circle cx="6" cy="16" r="4"/><circle cx="18" cy="16" r="4"/><path d="M6 16l4-7h6l2 7M10 9l3 7"/>') },
+    romantic: { label: "Romantic", icon: svg('<path d="M12 20s-8-5-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 9c0 6-8 11-8 11z"/>') },
+    family: { label: "Family", icon: svg('<circle cx="8" cy="6" r="2.5"/><circle cx="16" cy="6" r="2.5"/><path d="M4 21v-6a4 4 0 0 1 8 0M12 21v-6a4 4 0 0 1 8 0"/>') },
+    friends: { label: "Friends", icon: svg('<circle cx="9" cy="7" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20v-1a6 6 0 0 1 12 0v1M15 20v-1a4 4 0 0 1 6-3.5"/>') },
+    solo: { label: "Solo", icon: svg('<circle cx="12" cy="7" r="3.5"/><path d="M5 21v-1a7 7 0 0 1 14 0v1"/>') },
+    work: { label: "Work trip", icon: svg('<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2M3 13h18"/>') },
+    sunsets: { label: "Sunsets", icon: svg('<path d="M4 18h16M7 18a5 5 0 0 1 10 0M12 4v4M5 9l2 2M19 9l-2 2M2 22h20"/>') },
+    stargazing: { label: "Stargazing", icon: svg('<path d="M14 3a8 8 0 1 0 7 11 7 7 0 0 1-7-11z"/><path d="M6 4l.8 1.6 1.7.3-1.2 1.2.3 1.7L6 8l-1.6.8.3-1.7-1.2-1.2 1.7-.3z"/>') },
+    camping: { label: "Camping", icon: svg('<path d="M2 20L12 4l10 16zM12 4v16M9 20l3-6 3 6"/>') },
+    skiing: { label: "Skiing", icon: svg('<path d="M4 20l16-6M6 22l16-6"/><circle cx="16" cy="4" r="2"/><path d="M15 7l-3 5 4 2-2 4M12 12l-4-1"/>') },
+    diving: { label: "Diving", icon: svg('<path d="M4 10h16v4a3 3 0 0 1-3 3h-2l-3-3-3 3H7a3 3 0 0 1-3-3zM20 12h2V4M6 21c2-1.5 4-1.5 6 0s4 1.5 6 0"/>') },
+    safari: { label: "Safari", icon: svg('<circle cx="8" cy="15" r="4"/><circle cx="16" cy="15" r="4"/><path d="M6 11l1-6h3l1 6M18 11l-1-6h-3l-1 6"/>') },
+    temples: { label: "Temples", icon: svg('<path d="M5 21l2-14h10l2 14zM7 7l2-4h6l2 4M6 12h12M5.5 17h13M10 21v-3h4v3"/>') },
+    museums: { label: "Museums", icon: svg('<path d="M3 21h18M4 9h16M12 3L3 8h18zM6 9v9M10 9v9M14 9v9M18 9v9"/>') },
+    streetfood: { label: "Street food", icon: svg('<path d="M4 11h16c0 5-4 9-8 9s-8-4-8-9zM8 20h8M18 3l-5 7M21 5l-6 6"/>') },
+    finedining: { label: "Fine dining", icon: svg('<path d="M3 18h18M5 18a7 7 0 0 1 14 0M12 9V7M10 7h4M2 21h20"/>') },
+    concerts: { label: "Concerts", icon: svg('<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>') },
+    sports: { label: "Sports", icon: svg('<circle cx="12" cy="12" r="9"/><path d="M12 7l4 3-1.5 5h-5L8 10zM12 3v4M16 10l4-2M14.5 15l2.5 4M9.5 15L7 19M8 10L4 8"/>') },
+    luxury: { label: "Luxury", icon: svg('<path d="M6 3h12l4 6-10 12L2 9zM2 9h20M12 21L8 9l4-6 4 6z"/>') },
+    backpacking: { label: "Backpacking", icon: svg('<rect x="5" y="7" width="14" height="14" rx="3"/><path d="M9 7V4h6v3M5 13h14M10 13v3h4v-3"/>') },
+    honeymoon: { label: "Honeymoon", icon: svg('<path d="M9 18s-6-4-6-8a3.5 3.5 0 0 1 6-2 3.5 3.5 0 0 1 6 2M15 21s-6-4-6-8a3.5 3.5 0 0 1 6-2 3.5 3.5 0 0 1 6 2c0 4-6 8-6 8z"/>') },
+    pilgrimage: { label: "Pilgrimage", icon: svg('<path d="M3 21h18M6 21v-4h12v4M7 17c0-5 2-8 5-9 3 1 5 4 5 9M10 8V6h4v2M11 6l1-3 1 3"/>') },
+    trekking: { label: "Trekking", icon: svg('<path d="M8 21l3-7 3 3 1 4M11 14l1-5M12 9l3 2 3-1M12 9l-3 2v4M18 10l2 11"/><circle cx="13" cy="5" r="2"/>') },
+    boating: { label: "Boating", icon: svg('<path d="M12 3v13M12 4l7 10h-7M12 7L6 14h6M3 17h18l-3 4H6z"/>') },
+    lakes: { label: "Lakes", icon: svg('<path d="M2 14l6-8 4 5 3-3 7 6zM2 17h20M6 20h12"/>') },
+    waterfalls: { label: "Waterfalls", icon: svg('<path d="M3 4h6v16H3M21 4h-6v16h6M9 4h6M10 6v12M12 6v14M14 6v12"/>') },
+    biking: { label: "Bike trip", icon: svg('<circle cx="5" cy="17" r="3.5"/><circle cx="19" cy="17" r="3.5"/><path d="M5 17l4-6h5l2 3h3M9 11l-1-3H6M14 11l2-3h2"/>') },
+    nightsky: { label: "Night markets", icon: svg('<path d="M4 21V10l8-6 8 6v11M4 10h16M8 21v-6h8v6M12 4v-2"/>') },
+    rainforest: { label: "Rainforest", icon: svg('<path d="M12 21V11M12 11C8 11 4 8 4 4c4 0 8 3 8 7zM12 11c4 0 8-3 8-7-4 0-8 3-8 7zM12 15c-3 0-6-2-6-5M12 15c3 0 6-2 6-5"/>') },
+    roadside: { label: "Scenic drives", icon: svg('<path d="M8 21L11 3M16 21L13 3M12 6v2M12 11v2M12 16v2M3 21h18"/>') },
+  };
+
+  let savedSort = "newest"; try { savedSort = localStorage.getItem("ss-sort") || "newest"; } catch {}
+  const state = { sort: savedSort, profile: {}, places: [], photos: [], loaded: false, error: "", canEdit: false, uploading: null, db: null, assets: null, filter: "all", q: "", view: 0 };
+  let lb = null, playTimer = null;
+
+  const byTime = (a, b) => (a.createdAt || 0) - (b.createdAt || 0);
+  const photosOf = pid => state.photos.filter(p => p.placeId === pid).sort(byTime);
+  const coverOf = pl => { const l = photosOf(pl.id); return l.find(p => p.assetId === pl.coverAssetId) || l[0]; };
+  const placeId = () => decodeURIComponent((location.hash || "").slice(1));
+  const ageOf = dob => {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dob || ""); if (!m) return null;
+    const now = new Date(); let a = now.getFullYear() - +m[1];
+    if (now.getMonth() + 1 < +m[2] || (now.getMonth() + 1 === +m[2] && now.getDate() < +m[3])) a--;
+    return a >= 0 && a < 130 ? a : null;
+  };
+  // Turns a handle ("@name") or a pasted link into a safe outbound link for the passport.
+  const socialLink = (kind, raw) => {
+    const v = (raw || "").trim(); if (!v) return "—";
+    let url, label;
+    if (/^https?:\/\//i.test(v)) {
+      try { const u = new URL(v); if (!/^(www\.|m\.)?(instagram\.com|youtube\.com|youtu\.be)$/i.test(u.hostname)) return esc(v); url = u.href; const seg = u.pathname.split("/").filter(Boolean); label = seg.length ? (seg[0].startsWith("@") ? seg[0] : "@" + seg[seg.length - 1]) : u.hostname; } catch { return esc(v); }
+    } else {
+      const h = v.replace(/^@/, "").replace(/[^\w.\-]/g, ""); if (!h) return esc(v);
+      url = kind === "ig" ? `https://www.instagram.com/${h}/` : `https://www.youtube.com/@${h}`; label = "@" + h;
+    }
+    return `<a class="soc" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)} <span aria-hidden="true">↗</span></a>`;
+  };
+  const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
+  const hash = s => [...String(s)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
+  const yearOf = pl => +(String(pl.when || "").match(/\b(19|20)\d{2}\b/) || [])[0] || 0;
+  const tripOrder = () => [...state.places].sort((a, b) => (yearOf(a) - yearOf(b)) || byTime(a, b));
+
+  // ---------- render ----------
+  function render() {
+    applyTheme();
+    if (state.error) { root.innerHTML = `<div class="wrap" style="padding-block:40px"><div class="notice">${esc(state.error)}</div></div>`; return; }
+    if (!state.loaded) return;
+    const pid = placeId(), place = pid && state.places.find(p => p.id === pid);
+    root.innerHTML = place ? `<div class="trip" style="--stamp-ink:${inkOf(place)}">${placeView(place)}</div>` : homeView();
+    bindTilt();
+    drawRoute();
+    renderLightbox();
+  }
+
+  function mrz(name, places) {
+    const clean = s => (s || "").toUpperCase().normalize("NFD").replace(/[^A-Z ]/g, "").trim();
+    const parts = clean(name).split(/\s+/).filter(Boolean);
+    const sur = parts.length > 1 ? parts.pop() : (parts.pop() || "TRAVELLER");
+    const pad = s => (s + "<".repeat(44)).slice(0, 44);
+    const l1 = pad(`P<IND${sur}<<${parts.join("<")}`);
+    const l2 = pad(tripOrder().map(p => clean(p.code).replace(/ /g, "")).join("<") + "<<" + String(places).padStart(3, "0"));
+    return esc(l1) + "<br>" + esc(l2);
+  }
+
+  function homeView() {
+    const p = state.profile, name = p.name || "Your Name";
+    const words = name.trim().split(/\s+/);
+    const countries = new Set(state.places.map(x => (x.country || "").trim().toLowerCase()).filter(Boolean)).size;
+    const years = state.places.map(yearOf).filter(Boolean);
+    return `
+    <header class="cover" id="top">
+      ${p.bgAssetId ? `<img class="herobg" src="${src(p.bgAssetId)}" alt=""><div class="herotint"></div><div class="herotint"></div>` : ""}
+      <div class="wrap">
+        <div class="cover-top">
+          <span class="crest">${svg('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/>')} Stamps &amp; Stories</span>
+          ${state.canEdit ? `<span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn on-dark" data-act="bg">${p.bgAssetId ? "Change background" : "Add background photo"}</button><button class="btn on-dark" data-act="edit-profile">Edit profile</button></span>` : ""}
+        </div>
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <div class="label" style="color:var(--accent);margin-bottom:12px">${plural(state.places.length, "stamp")} · ${plural(state.photos.length, "photo")}</div>
+            <h1><span class="n1">${esc(words.slice(0, -1).join(" ") || words[0])}</span>${words.length > 1 ? `<span class="n2">${esc(words.at(-1))}</span>` : ""}</h1>
+            ${p.tagline ? `<p class="tag">${esc(p.tagline)}</p>` : state.canEdit ? `<p class="tag muted-hint">Add a one-line intro from Edit profile.</p>` : ""}
+            ${p.bio ? `<p class="bio">${esc(p.bio)}</p>` : ""}
+            <div class="hero-actions">
+              ${state.places.length ? `<button class="btn gold" data-act="jump">See my stamps</button>` : state.canEdit ? `<button class="btn gold" data-act="new-place">Add first stamp</button>` : ""}
+              ${state.photos.length ? `<button class="btn on-dark" data-act="play-all">▶ Play every trip</button>` : ""}
+            </div>
+          </div>
+          <div class="passport-stage">
+           <div class="pp-flip" id="pp-flip">
+            <div class="passport pp-face" id="passport">
+              <div class="pp-head"><span>Passport · Passeport</span><span>Type P · IND <button type="button" class="pp-flipbtn" data-act="flip" aria-label="Flip passport to see visas">↻ Visas</button></span></div>
+              <div class="pp-body">
+                <div class="photo">
+                  ${p.photoAssetId ? `<img src="${src(p.photoAssetId)}" alt="${esc(name)}">` : `<div class="ph">${state.canEdit ? "Tap to add your photo" : "No photo"}</div>`}
+                  ${state.canEdit ? `<button data-act="avatar">${p.photoAssetId ? "Change photo" : ""}</button>` : ""}
+                </div>
+                <div class="fields">
+                  <div class="full"><small>Name</small><b>${esc(name.toUpperCase())}</b></div>
+                  <div><small>Based in</small><b>${esc(p.home || "—")}</b></div>
+                  <div><small>Age</small><b>${ageOf(p.dob) ?? "—"}</b></div>
+                  <div><small>Places</small><b>${state.places.length}</b></div>
+                  <div><small>Countries</small><b>${countries}</b></div>
+                  <div><small>Instagram</small><b>${socialLink("ig", p.handle)}</b></div>
+                  <div><small>YouTube</small><b>${socialLink("yt", p.youtube)}</b></div>
+                </div>
+              </div>
+              <div class="mini-stamp">BOM</div>
+              <div class="mrz" aria-hidden="true">${mrz(name, state.places.length)}</div>
+            </div>
+            ${passportBack()}
+           </div>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main class="wrap">
+      ${routeSection()}
+      ${stampsSection()}
+      ${recentSection()}
+    </main>
+    <footer class="wrap"><div class="label">${esc(name)} · ${plural(state.places.length, "stamp")} collected</div></footer>
+    <nav class="secnav" id="secnav" aria-label="Sections"><div class="secnav-in">
+      <button data-act="goto" data-to="top">Passport</button>${state.places.length > 1 ? `<button data-act="goto" data-to="route-sec">Route</button>` : ""}<button data-act="goto" data-to="stamps">Stamps</button>${state.photos.length >= 3 ? `<button data-act="goto" data-to="recent-sec">Film</button>` : ""}
+      ${state.places.length > 1 ? `<button data-act="surprise" class="sn-cta">🎲 Surprise me</button>` : ""}</div></nav>
+    <button class="totop" id="totop" data-act="goto" data-to="top" aria-label="Back to top" hidden>↑</button>`;
+  }
+
+  // Back of the passport: one visa-style entry per country with trip counts and years.
+  function passportBack() {
+    const byC = {};
+    state.places.forEach(p => { const c = (p.country || "").trim(); if (!c) return; const k = c.toLowerCase(); (byC[k] ||= { name: c, trips: [], ink: inkOf(p) }).trips.push(p); });
+    const list = Object.values(byC).sort((a, b) => b.trips.length - a.trips.length || a.name.localeCompare(b.name));
+    return `<div class="passport pp-face pp-back" aria-hidden="true">
+      <div class="pp-head"><span>Visas · Entries</span><span>${plural(list.length, "country").replace("countrys", "countries")} <button type="button" class="pp-flipbtn" data-act="flip" aria-label="Flip passport back">↻ Front</button></span></div>
+      ${list.length ? `<div class="visas">${list.map((c, i) => {
+        const yrs = c.trips.map(yearOf).filter(Boolean), yr = yrs.length ? (Math.min(...yrs) === Math.max(...yrs) ? Math.min(...yrs) : Math.min(...yrs) + "–" + String(Math.max(...yrs)).slice(2)) : "";
+        return `<div class="visa" style="--c:${c.ink};--r:${((hash(c.name) % 9) - 4)}deg"><b>${esc(c.name.toUpperCase())}</b><span>${plural(c.trips.length, "entry").replace("entrys", "entries")}${yr ? " · " + yr : ""}</span><small>${esc(c.trips.map(t => t.code).join(" · "))}</small></div>`;
+      }).join("")}</div>` : `<p class="visa-empty">Add a country to your stamps and visa entries appear here.</p>`}
+    </div>`;
+  }
+
+  function routeSection() {
+    const trips = tripOrder();
+    if (trips.length < 2) return "";
+    const countries = new Set(trips.map(t => (t.country || "").trim().toLowerCase()).filter(Boolean)).size;
+    return `<section class="block" id="route-sec">
+      <div class="sec-head"><div><div class="label">Flight log</div><h2>The route so far</h2><p>Every trip in order. Hover a stop for a preview, tap it to land there.</p></div>
+        <div class="tools"><span class="route-stat">${plural(trips.length, "stop")}${countries ? ` · ${plural(countries, "country")}`.replace("countrys", "countries") : ""}</span><button class="btn gold" data-act="route-play" id="route-play">▶ Fly the route</button></div></div>
+      <div class="routebox" id="routebox"><svg id="route-svg" role="img" aria-label="Route through ${esc(trips.map(t => t.code).join(", "))}"></svg><div class="rtip" id="rtip" hidden></div></div>
+    </section>`;
+  }
+
+  // Lays the route out to fit the box width, snaking onto new rows when there are many stops.
+  let routeRO = null, routeAnim = null;
+  function drawRoute() {
+    const box = $("#routebox"), svgEl = $("#route-svg");
+    if (!box || !svgEl) return;
+    const trips = tripOrder(), n = trips.length, w = Math.max(280, box.clientWidth);
+    const per = Math.max(2, Math.min(n, Math.floor((w - 20) / (w < 500 ? 80 : 120)))), rows = Math.ceil(n / per);
+    const pad = w < 500 ? 30 : 56, rowH = w < 500 ? 150 : 180, top = w < 500 ? 120 : 130;
+    svgEl.classList.toggle("small", w < 500);
+    const colW = per > 1 ? (w - pad * 2) / (per - 1) : 0;
+    const pts = trips.map((t, i) => {
+      const r = Math.floor(i / per), c = i % per, col = r % 2 ? per - 1 - c : c;
+      const span = Math.min(per, n - r * per), offset = r === rows - 1 && span < per && rows === 1 ? 0 : 0;
+      return { t, x: pad + colW * (col + offset), y: top + r * rowH };
+    });
+    if (rows === 1 && n < per) pts.forEach((p, i) => p.x = pad + (w - pad * 2) * (n > 1 ? i / (n - 1) : .5));
+    let d = `M${pts[0].x.toFixed(1)} ${pts[0].y}`;
+    for (let i = 1; i < n; i++) {
+      const a = pts[i - 1], b = pts[i];
+      if (a.y === b.y) { const lift = 34 + (hash(a.t.code + b.t.code) % 26); d += ` Q${((a.x + b.x) / 2).toFixed(1)} ${a.y - lift} ${b.x.toFixed(1)} ${b.y}`; }
+      else { const side = a.x > w / 2 ? 1 : -1, bulge = side * Math.min(46, pad - 6); d += ` C${(a.x + bulge * 1.6).toFixed(1)} ${a.y} ${(b.x + bulge * 1.6).toFixed(1)} ${b.y} ${b.x.toFixed(1)} ${b.y}`; }
+    }
+    const h = top + (rows - 1) * rowH + 90;
+    svgEl.setAttribute("viewBox", `0 0 ${w} ${h}`); svgEl.setAttribute("width", w); svgEl.setAttribute("height", h);
+    svgEl.innerHTML = mapBackdrop(w, h) + `
+      <path class="arc" id="route-path" d="${d}"/>
+      <path class="arc-done" id="route-done" d="${d}"/>
+      ${pts.map((p, i) => `<g class="node" data-pid="${esc(p.t.id)}" data-i="${i}" tabindex="0" role="link" aria-label="${esc(p.t.name)}${p.t.when ? ", " + esc(p.t.when) : ""}" transform="translate(${p.x.toFixed(1)} ${p.y})" style="--c:${inkOf(p.t)}">
+        <circle class="halo" r="16"/><circle class="dot" r="7"/>
+        <text class="code" y="34" text-anchor="middle">${esc(p.t.code)}</text>
+        <text class="sub" y="50" text-anchor="middle">${esc((p.t.when || "").toUpperCase())}</text>
+        <text class="num" y="-14" text-anchor="middle">${String(i + 1).padStart(2, "0")}</text></g>`).join("")}
+      <g id="plane" class="plane" transform="translate(${pts[0].x} ${pts[0].y})" opacity="0"><path transform="rotate(90) scale(1.1)" d="M0-10 2-2 10 2v2l-8-2v6l3 2v2l-5-1-5 1v-2l3-2v-6l-8 2V2l8-4z"/></g>`;
+    const done = $("#route-done"), L = done.getTotalLength();
+    done.style.strokeDasharray = `${L} ${L}`; done.style.strokeDashoffset = L;
+    box._pts = pts;
+    if (routeRO) routeRO.disconnect();
+    let lastW = box.clientWidth;
+    routeRO = new ResizeObserver(() => { if (Math.abs(box.clientWidth - lastW) > 4) { lastW = box.clientWidth; cancelAnimationFrame(routeAnim); drawRoute(); } });
+    routeRO.observe(box);
+  }
+  // Chart-style backdrop: curved graticule, degree labels, compass rose and a scale bar.
+  function mapBackdrop(w, h) {
+    const cx = w / 2, sp = Math.max(70, w / 12), nM = Math.ceil(cx / sp) + 1, rows = 6;
+    let g = "";
+    for (let k = -nM; k <= nM; k++) {
+      const x = cx + k * sp, bow = k * sp * .22;
+      g += `<path class="grat${k === 0 ? " prime" : ""}" d="M${(x - bow * .3).toFixed(1)} -10 Q${(x + bow).toFixed(1)} ${h / 2} ${(x - bow * .3).toFixed(1)} ${h + 10}"/>`;
+      if (k % 2 === 0 && x > 30 && x < w - 30) { const deg = Math.abs(k) * 15; g += `<text class="deg" x="${x.toFixed(1)}" y="14" text-anchor="middle">${deg === 0 ? "0°" : deg + "°" + (k < 0 ? "W" : "E")}</text>`; }
+    }
+    for (let r = 1; r < rows; r++) {
+      const y = h * r / rows, sag = (r - rows / 2) * 10;
+      g += `<path class="grat${r === rows / 2 ? " prime" : ""}" d="M-10 ${y.toFixed(1)} Q${cx} ${(y + sag).toFixed(1)} ${w + 10} ${y.toFixed(1)}"/>`;
+      const lat = Math.abs(rows / 2 - r) * 30;
+      g += `<text class="deg" x="8" y="${(y - 4).toFixed(1)}">${lat === 0 ? "EQ" : lat + "°" + (r < rows / 2 ? "N" : "S")}</text>`;
+    }
+    const rx = w - 52, ry = 62, R = 26;
+    const rose = `<g class="rose" transform="translate(${rx} ${ry})">
+      <circle r="${R}"/><circle r="${R - 6}" class="thin"/>
+      <path class="pt" d="M0 -${R + 6} L5 -5 L0 0 L-5 -5z"/><path class="pt dim" d="M0 ${R + 6} L5 5 L0 0 L-5 5z"/>
+      <path class="pt dim" d="M${R + 6} 0 L5 5 L0 0 L5 -5z"/><path class="pt dim" d="M-${R + 6} 0 L-5 5 L0 0 L-5 -5z"/>
+      <path class="pt dim" d="M14 -14 L3 -1 L0 0 L1 -3zM-14 14 L-3 1 L0 0 L-1 3zM14 14 L1 3 L0 0 L3 1zM-14 -14 L-1 -3 L0 0 L-3 -1z"/>
+      <text class="deg n" y="-${R + 10}" text-anchor="middle">N</text></g>`;
+    const sx = 18, sy = h - 18, seg = Math.min(46, w / 10);
+    const scale = `<g class="scale" transform="translate(${sx} ${sy})">
+      <rect width="${seg}" height="5"/><rect x="${seg}" width="${seg}" height="5" class="hollow"/><rect x="${seg * 2}" width="${seg}" height="5"/>
+      <text class="deg" y="-5">0</text><text class="deg" x="${seg * 3}" y="-5" text-anchor="end">${(3000).toLocaleString()} km</text></g>`;
+    return `<defs><clipPath id="mapclip"><rect width="${w}" height="${h}" rx="6"/></clipPath></defs><g class="mapbg" clip-path="url(#mapclip)" aria-hidden="true">${g}${w > 420 ? rose : ""}${scale}</g>`;
+  }
+  function showRouteTip(g) {
+    const box = $("#routebox"), tip = $("#rtip"); if (!box || !tip) return;
+    const p = box._pts[+g.dataset.i]; if (!p) return;
+    const t = p.t, cover = coverOf(t), n = photosOf(t.id).length;
+    tip.innerHTML = `${cover ? `<img src="${src(cover.assetId)}" alt="">` : `<div class="rt-motif" style="color:${inkOf(t)}">${MOTIFS[motifOf(t)].svg}</div>`}
+      <div class="rt-body"><b>${esc(t.name)}</b><span>${esc([t.country, t.when].filter(Boolean).join(" · ") || "No date yet")}</span><span>${n ? plural(n, "photo") : "No photos yet"} · Stop ${+g.dataset.i + 1}</span></div>`;
+    tip.hidden = false;
+    const tw = tip.offsetWidth, th = tip.offsetHeight, bw = box.clientWidth;
+    tip.style.left = Math.max(4, Math.min(bw - tw - 4, p.x - tw / 2)) + "px";
+    tip.style.top = (p.y + 12 - th - 22 < 0 ? p.y + 12 + 62 : p.y + 12 - th - 22) + "px";
+    box.querySelectorAll(".node.on").forEach(x => x !== g && x.classList.remove("on")); g.classList.add("on");
+  }
+  function hideRouteTip() { const tip = $("#rtip"); if (tip) tip.hidden = true; document.querySelectorAll("#routebox .node.on").forEach(x => x.classList.remove("on")); }
+  function flyRoute() {
+    const box = $("#routebox"), path = $("#route-path"), done = $("#route-done"), plane = $("#plane"), btn = $("#route-play");
+    if (!box || !path) return;
+    cancelAnimationFrame(routeAnim);
+    const L = path.getTotalLength(), pts = box._pts, nodes = [...box.querySelectorAll(".node")];
+    nodes.forEach(n => n.classList.remove("hit"));
+    if (reduced()) { done.style.strokeDashoffset = 0; nodes.forEach(n => n.classList.add("hit")); return; }
+    const dur = Math.min(14000, 1200 * pts.length), t0 = performance.now();
+    plane.setAttribute("opacity", "1"); if (btn) { btn.disabled = true; btn.textContent = "Flying…"; }
+    const step = now => {
+      const k = Math.min(1, (now - t0) / dur), e = k < .5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2, len = L * e;
+      const a = path.getPointAtLength(len), b = path.getPointAtLength(Math.min(L, len + 1));
+      const ang = Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI;
+      plane.setAttribute("transform", `translate(${a.x.toFixed(1)} ${a.y.toFixed(1)}) rotate(${(ang).toFixed(1)})`);
+      done.style.strokeDashoffset = L - len;
+      pts.forEach((p, i) => { if (Math.hypot(p.x - a.x, p.y - a.y) < 14) nodes[i].classList.add("hit"); });
+      if (k < 1) routeAnim = requestAnimationFrame(step);
+      else { nodes.forEach(n => n.classList.add("hit")); setTimeout(() => plane.setAttribute("opacity", "0"), 600); if (btn) { btn.disabled = false; btn.textContent = "▶ Fly again"; } }
+    };
+    routeAnim = requestAnimationFrame(step);
+  }
+
+  function stamp(p) {
+    const h = hash(p.id + p.code), rot = ((h % 13) - 6);
+    const cover = coverOf(p), n = photosOf(p.id).length;
+    return `<a class="stamp" href="#${encodeURIComponent(p.id)}" style="--c:${inkOf(p)};--r:${rot}deg" aria-label="${esc(p.name)}, ${plural(n, "photo")}">${stampArt(p, cover?.assetId, n)}</a>`;
+  }
+
+  function stampsSection() {
+    const head = `<div class="sec-head"><div><div class="label">Stamp page</div><h2>Where I've been</h2><p>Hover a stamp to peek at the photos, tap it to open the trip.</p></div>`;
+    if (!state.places.length) return `<section class="block" id="stamps">${head}</div>
+      <div class="empty"><div class="ghost">NYC</div><h3>No stamps yet</h3>
+      <p>Every place you add becomes an ink stamp on this page, with your photos from the trip inside it.</p>
+      ${state.canEdit ? `<button class="btn gold" data-act="new-place">+ Add your first place</button>` : ""}</div></section>`;
+    const used = Object.keys(VIBES).filter(k => state.places.some(p => (p.vibes || []).includes(k)));
+    const q = state.q.trim().toLowerCase();
+    const sorters = { newest: (a, b) => (yearOf(b) - yearOf(a)) || byTime(b, a), oldest: (a, b) => (yearOf(a) - yearOf(b)) || byTime(a, b), az: (a, b) => a.name.localeCompare(b.name), photos: (a, b) => photosOf(b.id).length - photosOf(a.id).length || a.name.localeCompare(b.name) };
+    const list = [...state.places].sort(sorters[state.sort] || sorters.newest).filter(p => (state.filter === "all" || (p.vibes || []).includes(state.filter)) && (!q || [p.name, p.code, p.country].join(" ").toLowerCase().includes(q)));
+    return `<section class="block" id="stamps">${head}
+      <div class="tools"><input class="search" id="search" type="search" placeholder="Find a place  ( / )" value="${esc(state.q)}" aria-label="Find a place">
+        <select class="search sortsel" id="sort-sel" aria-label="Sort stamps">${[["newest", "Newest trips"], ["oldest", "Oldest trips"], ["az", "A to Z"], ["photos", "Most photos"]].map(([k, l]) => `<option value="${k}" ${(state.sort || "newest") === k ? "selected" : ""}>${l}</option>`).join("")}</select>
+        ${state.places.length > 1 ? `<button class="btn" data-act="surprise">🎲 Surprise me</button>` : ""}
+        ${state.canEdit ? `<button class="btn gold" data-act="new-place">+ New stamp</button>` : ""}</div></div>
+      ${used.length ? `<div class="chips" role="group" aria-label="Filter by trip vibe"><button class="chip" data-act="filter" data-v="all" aria-pressed="${state.filter === "all"}">All trips</button>
+        ${used.map(k => `<button class="chip" data-act="filter" data-v="${k}" aria-pressed="${state.filter === k}">${VIBES[k].icon}${VIBES[k].label}</button>`).join("")}</div>` : ""}
+      ${list.length ? `<div class="stamps">${list.map(stamp).join("")}${state.canEdit && state.filter === "all" && !q ? `<button class="addstamp" data-act="new-place"><span><b>+</b>New stamp</span></button>` : ""}</div>`
+        : `<div class="notice">No stamps match that. Try another filter.</div>`}
+    </section>`;
+  }
+
+  function recentSection() {
+    const recent = [...state.photos].sort((a, b) => byTime(b, a)).slice(0, 18);
+    if (recent.length < 3) return "";
+    return `<section class="block" id="recent-sec"><div class="sec-head"><div><div class="label">Latest roll</div><h2>Fresh off the film</h2></div></div>
+      <div class="film"><div class="reel">${recent.map((ph, i) => {
+        const pl = state.places.find(p => p.id === ph.placeId);
+        return `<button data-act="open-recent" data-i="${i}" aria-label="Photo from ${esc(pl?.name)}"><img src="${src(ph.assetId)}" alt="" loading="lazy">${pl ? `<span class="lbl">${esc(pl.code)}</span>` : ""}</button>`; }).join("")}</div></div></section>`;
+  }
+
+  function placeView(p) {
+    const list = photosOf(p.id), cover = coverOf(p);
+    state.view = Math.max(0, Math.min(state.view, list.length - 1));
+    const cur = list[state.view];
+    const vibes = (p.vibes || []).filter(v => VIBES[v]), months = (p.months || []).filter(m => MONTHS.includes(m));
+    const trips = tripOrder(), idx = trips.findIndex(t => t.id === p.id);
+    const prevT = trips[idx - 1], nextT = trips[idx + 1];
+    return `
+    <header class="ptop">
+      ${p.bannerAssetId ? `<img class="herobg" src="${src(p.bannerAssetId)}" alt=""><div class="herotint"></div><div class="herotint"></div>` : ""}
+      <div class="wrap">
+        <div class="bar">
+          <a class="btn on-dark" href="#">← All stamps</a>
+          <span>${state.canEdit ? `<button class="btn on-dark" data-act="banner">${p.bannerAssetId ? "Change background" : "Add background photo"}</button>${p.bannerAssetId ? `<button class="btn on-dark" data-act="banner-remove">Remove background</button>` : ""}<button class="btn on-dark" data-act="edit-place" data-pid="${esc(p.id)}">Edit</button><button class="btn on-dark" data-act="del-place">Delete</button>` : ""}
+          ${state.canEdit ? `<button class="btn gold" data-act="upload" ${state.uploading ? "disabled" : ""}>+ Add photos</button>` : ""}</span>
+        </div>
+        <div class="ptitle">
+          <div class="motif-big" aria-hidden="true">${MOTIFS[motifOf(p)].svg}</div>
+          <div class="big">${esc(p.code)}</div>
+          <div>
+            <h1>${esc(p.name)}</h1>
+            <div class="sub">${p.country ? `<span>${esc(p.country)}</span>` : ""}${p.when ? `<span>${esc(p.when)}</span>` : ""}${months.length ? `<span>${months.join(" ")}</span>` : ""}<span>${plural(list.length, "photo")}</span></div>
+            ${vibes.length ? `<div class="vibe-row">${vibes.map(v => `<span>${VIBES[v].icon}${VIBES[v].label}</span>`).join("")}</div>` : ""}
+          </div>
+        </div>
+        ${p.note ? `<p class="ptitle note" style="margin:0">${esc(p.note)}</p>` : ""}
+      </div>
+    </header>
+    <main class="wrap">
+      ${state.uploading ? `<div class="progress">Developing ${state.uploading.done} of ${state.uploading.total}…</div>` : ""}
+      ${cur ? `<div class="viewer">
+        <div class="screen">
+          <img class="main" src="${src(cur.assetId)}" alt="${esc(p.name)} photo ${state.view + 1}" data-act="full" style="cursor:zoom-in">
+          ${list.length > 1 ? `<button class="btn on-dark round nav prev" data-act="vprev" aria-label="Previous photo">‹</button><button class="btn on-dark round nav next" data-act="vnext" aria-label="Next photo">›</button>` : ""}
+          <div class="hud"><span class="pos">${esc(p.code)} · ${String(state.view + 1).padStart(2, "0")}/${String(list.length).padStart(2, "0")}</span>
+            <span>${list.length > 1 ? `<button class="btn on-dark" data-act="play-place" data-pid="${esc(p.id)}">▶ Slideshow</button>` : ""}<button class="btn on-dark" data-act="full">Full screen</button></span></div>
+        </div>
+        ${list.length > 1 ? `<div class="film"><div class="reel small" id="reel">${list.map((ph, i) => `<button class="${i === state.view ? "on" : ""}" data-act="vpick" data-i="${i}" aria-label="Photo ${i + 1}"><img src="${src(ph.assetId)}" alt="" loading="lazy"></button>`).join("")}</div></div>` : ""}
+      </div>` : `<div class="empty" style="margin-top:28px"><div class="ghost">${esc(p.code)}</div><h3>Nothing developed yet</h3>
+        <p>${state.canEdit ? "Add photos from this trip. You can pick several at once." : "Check back soon."}</p>
+        ${state.canEdit ? `<button class="btn gold" data-act="upload">+ Add photos</button>` : ""}</div>`}
+      ${prevT || nextT ? `<div class="nexttrips">
+        ${prevT ? `<a class="nt" href="#${encodeURIComponent(prevT.id)}" style="--c:${inkOf(prevT)}"><span class="nt-stamp">${stampArt(prevT, null, photosOf(prevT.id).length)}</span><span class="nt-txt"><small>← Previous trip</small><b>${esc(prevT.name)}</b><span>${esc(prevT.when || prevT.country || "")}</span></span></a>` : "<span></span>"}
+        ${nextT ? `<a class="nt next" href="#${encodeURIComponent(nextT.id)}" style="--c:${inkOf(nextT)}"><span class="nt-txt"><small>Next trip →</small><b>${esc(nextT.name)}</b><span>${esc(nextT.when || nextT.country || "")}</span></span><span class="nt-stamp">${stampArt(nextT, null, photosOf(nextT.id).length)}</span></a>` : ""}
+      </div>` : ""}
+    </main>`;
+  }
+
+  // ---------- small interactions ----------
+  function toast(msg) {
+    let t = $("#toast"); if (!t) { t = document.createElement("div"); t.id = "toast"; t.className = "toast"; t.setAttribute("role", "status"); document.body.appendChild(t); }
+    t.textContent = msg; t.classList.remove("show"); void t.offsetWidth; t.classList.add("show");
+    clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 2400);
+  }
+  function surprise() {
+    const all = [...document.querySelectorAll(".stamps .stamp")];
+    if (!all.length) { const pl = state.places[Math.floor(Math.random() * state.places.length)]; if (pl) location.hash = encodeURIComponent(pl.id); return; }
+    $("#stamps")?.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "start" });
+    const pick = all[Math.floor(Math.random() * all.length)];
+    if (reduced()) { location.hash = pick.getAttribute("href").slice(1); return; }
+    let i = 0; const hops = 14 + Math.floor(Math.random() * 6);
+    const tick = () => {
+      all.forEach(a => a.classList.remove("lit"));
+      const cur = i >= hops ? pick : all[Math.floor(Math.random() * all.length)];
+      cur.classList.add("lit"); i++;
+      if (i <= hops) setTimeout(tick, 60 + i * 9);
+      else { cur.classList.add("press"); toast("Landing in " + (state.places.find(p => "#" + encodeURIComponent(p.id) === cur.getAttribute("href"))?.name || "your next stop") + "…"); setTimeout(() => { location.hash = cur.getAttribute("href").slice(1); }, 900); }
+    };
+    setTimeout(tick, 350);
+  }
+  function showHelp() {
+    openModal(`<div class="sheet"><h2>Shortcuts</h2>
+      <div class="keys">
+        <kbd>/</kbd><span>Search stamps</span>
+        <kbd>S</kbd><span>Surprise me, open a random trip</span>
+        <kbd>R</kbd><span>Fly the route</span>
+        <kbd>F</kbd><span>Flip the passport</span>
+        ${state.canEdit ? `<kbd>N</kbd><span>New stamp</span>` : ""}
+        <kbd>← →</kbd><span>Previous / next photo on a trip</span>
+        <kbd>Space</kbd><span>Play or pause a slideshow</span>
+        <kbd>Esc</kbd><span>Close windows</span>
+        <kbd>?</kbd><span>Show this list</span>
+      </div>
+      <div class="foot"><button class="btn gold" data-act="cancel">Got it</button></div></div>`);
+  }
+
+  // ---------- passport tilt ----------
+  function bindTilt() {
+    const pp = $("#passport"); if (!pp || reduced()) return;
+    pp.addEventListener("pointermove", e => {
+      const r = pp.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+      pp.style.setProperty("--ry", ((x - .5) * 14).toFixed(2) + "deg");
+      pp.style.setProperty("--rx", ((.5 - y) * 12).toFixed(2) + "deg");
+      pp.style.setProperty("--mx", (x * 100).toFixed(1) + "%");
+      pp.style.setProperty("--my", (y * 100).toFixed(1) + "%");
+    });
+    pp.addEventListener("pointerleave", () => { ["--rx", "--ry"].forEach(k => pp.style.setProperty(k, "0deg")); });
+  }
+
+  // ---------- lightbox ----------
+  function openLB(list, index, playing) { lb = { list, index, playing: !!playing }; renderLightbox(); }
+  function closeLB() { lb = null; clearTimeout(playTimer); renderLightbox(); }
+  function step(d) { if (!lb) return; const n = lb.list.length; lb.index = (lb.index + d + n) % n; renderLightbox(); }
+  function renderLightbox() {
+    let el = $("#lb"); clearTimeout(playTimer);
+    if (!lb) { el && el.remove(); document.documentElement.style.overflow = ""; return; }
+    lb.list = lb.list.filter(ph => state.photos.some(x => x.id === ph.id));
+    if (!lb.list.length) return closeLB();
+    lb.index = Math.max(0, Math.min(lb.index, lb.list.length - 1));
+    const ph = lb.list[lb.index], place = state.places.find(p => p.id === ph.placeId) || {};
+    const isCover = coverOf(place)?.id === ph.id;
+    document.documentElement.style.overflow = "hidden";
+    if (!el) { el = document.createElement("div"); el.id = "lb"; el.className = "lb"; el.setAttribute("role", "dialog"); el.setAttribute("aria-label", "Photo viewer"); document.body.appendChild(el); }
+    el.innerHTML = `<div class="bar">
+        <span class="pos">${esc(place.code || "")} · ${esc(place.name || "")} · ${lb.index + 1}/${lb.list.length}</span>
+        <span>${lb.list.length > 1 ? `<button class="btn on-dark" data-act="toggle-play">${lb.playing ? "❚❚ Pause" : "▶ Play"}</button>` : ""}
+          ${state.canEdit ? `<button class="btn on-dark" data-act="cover" ${isCover ? "disabled" : ""}>${isCover ? "Stamp photo" : "Use on stamp"}</button><button class="btn on-dark" data-act="del-photo">Delete</button>` : ""}
+          <button class="btn on-dark" data-act="close">✕ Close</button></span></div>
+      <div class="stage"><img src="${src(ph.assetId)}" alt="">
+        ${lb.list.length > 1 ? `<button class="btn on-dark round nav prev" data-act="prev" aria-label="Previous">‹</button><button class="btn on-dark round nav next" data-act="next" aria-label="Next">›</button>` : ""}
+        ${lb.playing ? `<div class="timer"><i></i></div>` : ""}</div>
+      <div class="film" style="padding:14px 10px"><div class="reel small">${lb.list.slice(Math.max(0, lb.index - 12), lb.index + 13).map(t => {
+        const i = lb.list.indexOf(t); return `<button class="${i === lb.index ? "on" : ""}" data-act="jumpto" data-i="${i}" aria-label="Photo ${i + 1}"><img src="${src(t.assetId)}" alt=""></button>`; }).join("")}</div></div>`;
+    el.querySelector(".reel button.on")?.scrollIntoView({ block: "nearest", inline: "center" });
+    if (lb.playing) playTimer = setTimeout(() => step(1), 4000);
+  }
+
+  // ---------- dialogs ----------
+  function closeModal() { $("#modal")?.remove(); applyTheme(); }
+  // Site colour: a named ink or a custom hex (deepened if too light), applied to the whole page.
+  function applyTheme(t = state.profile.theme) {
+    const c = isHex(t) ? readableInk(t) : (INKS.find(i => i.k === t) || { c: "#1d4e7a" }).c;
+    document.documentElement.style.setProperty("--accent", c);
+  }
+  function openModal(html) { closeModal(); const m = document.createElement("div"); m.id = "modal"; m.className = "modal"; m.innerHTML = html; document.body.appendChild(m); }
+  function showErr(err) { const el = $("#form-err"); if (el) { el.hidden = false; el.textContent = "Couldn't save: " + (err?.message || "try again in a moment."); } }
+
+  function placeForm(existing) {
+    const sel = { months: new Set(existing?.months || []), vibes: new Set(existing?.vibes || []) };
+    openModal(`<form class="sheet sheet-xl" id="place-form">
+      <header class="sx-head"><h2>${existing ? "Edit stamp" : "New stamp"}</h2><button type="button" class="btn round" data-act="cancel" aria-label="Close">✕</button></header>
+      <div class="sx-main">
+      <aside class="sx-preview"><div class="stamp" id="sx-stamp"></div><span class="hint">Live preview</span></aside>
+      <div class="sx-body">
+      <section class="sx-sec"><div class="sx-title">Trip details</div>
+      <label>Place name<input id="name-in" required maxlength="60" placeholder="New York City" value="${esc(existing?.name)}"></label>
+      <div class="row">
+        <label>Code on the stamp<input id="code-in" required maxlength="4" placeholder="NYC" value="${esc(existing?.code)}"><span class="hint">2–4 letters, like an airport code</span></label>
+        <label>Country<input id="country-in" maxlength="40" placeholder="USA" value="${esc(existing?.country)}"></label>
+      </div>
+      <label>When you went<input id="when-in" maxlength="30" placeholder="Jun 2025" value="${esc(existing?.when)}"><span class="hint">Include the year so the flight log puts trips in order.</span></label>
+      <div><div style="font-size:14px;font-weight:600;margin-bottom:6px">Months</div>
+        <div class="picker" id="months-pick">${MONTHS.map(m => `<button type="button" data-m="${m}" aria-pressed="${sel.months.has(m)}">${m}</button>`).join("")}</div></div>
+      <div><div style="font-size:14px;font-weight:600;margin-bottom:6px">Trip vibe</div>
+        <div class="picker scrollbox" id="vibes-pick">${Object.entries(VIBES).map(([k, v]) => `<button type="button" data-v="${k}" aria-pressed="${sel.vibes.has(k)}">${v.icon}${v.label}</button>`).join("")}</div></div>
+      <label>Note<textarea id="note-in" maxlength="280" placeholder="A line or two about the trip">${esc(existing?.note)}</textarea></label>
+      </section>
+      <section class="sx-sec"><div class="sx-title">Stamp look</div>
+      <div><div style="font-size:14px;font-weight:600;margin-bottom:6px">Stamp design</div>
+        <input class="search" id="motif-q" type="search" placeholder="Search designs, e.g. temple, beach, tower" aria-label="Search stamp designs" style="width:100%;margin-bottom:6px">
+        <div class="mpick" id="motif-pick"><button type="button" data-k="" aria-pressed="${!existing?.motif}"><span class="i">${MOTIFS.plane.svg}</span>Auto</button>${Object.entries(MOTIFS).map(([k, v]) => `<button type="button" data-k="${k}" aria-pressed="${existing?.motif === k}"><span class="i">${v.svg}</span>${v.label}</button>`).join("")}</div>
+        <span class="hint">Auto picks one from the place name, like Liberty for New York.</span></div>
+      <div><div style="font-size:14px;font-weight:600;margin-bottom:6px">Stamp shape</div>
+        <div class="fam-chips" id="shape-fams"><button type="button" data-f="" aria-pressed="true">All ${Object.keys(SHAPES).length}</button>${SHAPE_FAMILIES.map(f => `<button type="button" data-f="${f}" aria-pressed="false">${f}</button>`).join("")}</div>
+        <div class="mpick spick" id="shape-pick"><button type="button" data-s="" data-f="" aria-pressed="${!existing?.shape}"><span class="i"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 24a16 16 0 1 0 32 0a16 16 0 1 0-32 0M20 18h8l-6 12h8"/></svg></span>Auto</button>${Object.keys(SHAPES).map(k => `<button type="button" data-s="${k}" data-f="${SHAPE_FAMILY[k]}" aria-pressed="${existing?.shape === k}" title="${SHAPE_LABELS[k]}"><span class="i"><svg viewBox="-6 -6 212 252" fill="none" stroke="currentColor" stroke-width="12" stroke-linejoin="round" ${PERF[k] ? `stroke-linecap="round" stroke-dasharray="0 ${PERF[k] * 2}"` : ""}><path d="${SHAPES[k]}"/></svg></span>${SHAPE_LABELS[k]}</button>`).join("")}</div>
+        <span class="hint">Auto uses the shape that suits the design.</span></div>
+      <div><div style="font-size:14px;font-weight:600;margin-bottom:6px">Stamp colour</div>
+        <div class="ipick" id="ink-pick"><button type="button" data-ink="" data-label="Auto" aria-pressed="${!existing?.ink}" title="Auto" aria-label="Auto"><span class="sw auto"></span></button>${INKS.map(i => `<button type="button" data-ink="${i.k}" data-label="${i.label}" aria-pressed="${existing?.ink === i.k}" title="${i.label}" aria-label="${i.label}"><span class="sw" style="background:${i.c}"></span></button>`).join("")}</div>
+        <div class="ink-custom"><label class="wheel" title="Pick any colour"><input type="color" id="ink-wheel" value="${isHex(existing?.ink) ? existing.ink : "#2f6690"}" aria-label="Pick any colour"><span>Colour wheel</span></label>
+          <span class="ink-name" id="ink-name">${esc(isHex(existing?.ink) ? "Custom " + existing.ink.toUpperCase() : (INKS.find(i => i.k === existing?.ink) || { label: "Auto" }).label)}</span>
+          <span class="ink-prev" id="ink-prev" style="background:${isHex(existing?.ink) ? readableInk(existing.ink) : "transparent"}" ${isHex(existing?.ink) ? "" : "hidden"}></span></div>
+        <span class="hint" id="ink-hint" ${isHex(existing?.ink) && readableInk(existing.ink) !== existing.ink.toLowerCase() ? "" : "hidden"}>Light colours are deepened a little so the stamp stays readable.</span>
+        <span class="hint">The trip's page takes on the same colour.</span></div>
+      </section>
+      </div>
+      </div>
+      <footer class="sx-foot"><p class="err" id="form-err" hidden></p><span class="sx-btns"><button type="button" class="btn" data-act="cancel">Cancel</button><button class="btn gold">${existing ? "Save" : "Add stamp"}</button></span></footer>
+    </form>`);
+    const name = $("#name-in"), code = $("#code-in");
+    let touched = !!existing;
+    code.addEventListener("input", () => touched = true);
+    name.addEventListener("input", () => {
+      if (touched) return;
+      const w = name.value.trim().split(/\s+/).filter(Boolean);
+      code.value = (w.length > 1 ? w.map(x => x[0]).join("") : (w[0] || "").slice(0, 3)).slice(0, 4).toUpperCase();
+    });
+    const toggle = (setName, attr) => e => { const b = e.target.closest(`[data-${attr}]`); if (!b) return; const v = b.dataset[attr], s = sel[setName]; s.has(v) ? s.delete(v) : s.add(v); b.setAttribute("aria-pressed", s.has(v)); };
+    let motifSel = existing?.motif || "", inkSel = existing?.ink || "", shapeSel = existing?.shape || "";
+    $("#shape-fams").addEventListener("click", e => { const b = e.target.closest("[data-f]"); if (!b) return; const f = b.dataset.f; $("#shape-fams").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); $("#shape-pick").querySelectorAll("button").forEach(x => { x.hidden = !!f && x.dataset.f !== f && x.dataset.s !== ""; }); });
+    $("#shape-pick").addEventListener("click", e => { const b = e.target.closest("[data-s]"); if (!b) return; shapeSel = b.dataset.s; $("#shape-pick").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); });
+    $("#ink-pick").addEventListener("click", e => { const b = e.target.closest("[data-ink]"); if (!b) return; inkSel = b.dataset.ink; $("#ink-name").textContent = b.dataset.label; $("#ink-prev").hidden = true; $("#ink-hint").hidden = true; $("#ink-pick").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); });
+    $("#ink-wheel").addEventListener("input", e => {
+      inkSel = e.target.value.toLowerCase(); const shown = readableInk(inkSel);
+      $("#ink-name").textContent = "Custom " + inkSel.toUpperCase();
+      $("#ink-prev").hidden = false; $("#ink-prev").style.background = shown;
+      $("#ink-hint").hidden = shown === inkSel;
+      $("#ink-pick").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", "false"));
+    });
+    $("#motif-q").addEventListener("input", e => { const q = e.target.value.trim().toLowerCase(); $("#motif-pick").querySelectorAll("button").forEach(b => { b.hidden = !!q && !b.textContent.toLowerCase().includes(q) && !(b.dataset.k || "").includes(q); }); });
+    $("#motif-pick").addEventListener("click", e => { const b = e.target.closest("[data-k]"); if (!b) return; motifSel = b.dataset.k; $("#motif-pick").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); });
+    $("#months-pick").addEventListener("click", toggle("months", "m"));
+    $("#vibes-pick").addEventListener("click", toggle("vibes", "v"));
+    name.focus();
+    const preview = () => {
+      if (!$("#place-form")) return;
+      const p = { ...(existing || {}), name: name.value.trim() || "Your place", code: code.value.trim().toUpperCase() || "ABC", country: $("#country-in").value.trim(), when: $("#when-in").value.trim(),
+        vibes: Object.keys(VIBES).filter(v => sel.vibes.has(v)), motif: motifSel, ink: inkSel, shape: shapeSel };
+      const el = $("#sx-stamp"); if (!el) return;
+      el.style.setProperty("--c", inkOf(p)); el.innerHTML = stampArt(p, null, existing ? photosOf(existing.id).length : 0);
+    };
+    $("#place-form").addEventListener("input", preview);
+    $("#place-form").addEventListener("click", () => setTimeout(preview));
+    preview();
+    $("#place-form").addEventListener("submit", async e => {
+      e.preventDefault();
+      const data = { name: name.value.trim(), code: code.value.trim().toUpperCase(), country: $("#country-in").value.trim(), when: $("#when-in").value.trim(), note: $("#note-in").value.trim(),
+        months: MONTHS.filter(m => sel.months.has(m)), vibes: Object.keys(VIBES).filter(v => sel.vibes.has(v)), motif: motifSel, ink: inkSel, shape: shapeSel };
+      if (!data.name || !data.code) return;
+      try {
+        if (existing) { await state.db.doc("places/" + existing.id).update(data); closeModal(); toast("Stamp saved"); }
+        else { const ref = await state.db.collection("places").add({ ...data, createdAt: Date.now() }); closeModal(); state.view = 0; location.hash = encodeURIComponent(ref.id); toast("New stamp added"); }
+      } catch (err) { showErr(err); }
+    });
+  }
+
+  function profileForm() {
+    const p = state.profile;
+    openModal(`<form class="sheet" id="profile-form">
+      <h2>Edit profile</h2>
+      <div class="avatar-row">
+        ${p.photoAssetId ? `<img class="av" src="${src(p.photoAssetId)}" alt="">` : `<div class="av"></div>`}
+        <div style="display:grid;gap:4px"><button type="button" class="btn" data-act="avatar">${p.photoAssetId ? "Change photo" : "Upload your photo"}</button><span class="hint">Shown on your passport page. A portrait works best.</span></div>
+      </div>
+      <div class="avatar-row">
+        ${p.bgAssetId ? `<img class="av" style="width:96px;height:60px" src="${src(p.bgAssetId)}" alt="">` : `<div class="av" style="width:96px;height:60px"></div>`}
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><button type="button" class="btn" data-act="bg">${p.bgAssetId ? "Change background" : "Upload background"}</button>${p.bgAssetId ? `<button type="button" class="btn" data-act="bg-remove">Remove</button>` : ""}<span class="hint" style="flex-basis:100%">The wide photo behind your name at the top.</span></div>
+      </div>
+      <label>Name<input id="p-name" required maxlength="40" value="${esc(p.name)}"></label>
+      <label>Date of birth<input id="p-dob" type="date" max="${new Date().toISOString().slice(0, 10)}" value="${esc(p.dob)}"><span class="hint">Only your age is shown on the passport.</span></label>
+      <label>One-line intro<input id="p-tag" maxlength="90" placeholder="Collecting skylines, coastlines and good coffee." value="${esc(p.tagline)}"></label>
+      <label>About you<textarea id="p-bio" maxlength="400" placeholder="Where you're from, what you do, how you like to travel.">${esc(p.bio)}</textarea></label>
+      <div class="row">
+        <label>Based in<input id="p-home" maxlength="28" placeholder="Boston, MA" value="${esc(p.home)}"></label>
+        <label>Instagram<input id="p-handle" maxlength="120" placeholder="@yourhandle or profile link" value="${esc(p.handle)}"></label>
+      </div>
+      <label>YouTube<input id="p-yt" maxlength="160" placeholder="@yourchannel or channel link" value="${esc(p.youtube)}"><span class="hint">Both show on your passport and open in a new tab when tapped.</span></label>
+      <div><div style="font-size:14px;font-weight:600;margin-bottom:6px">Site colour</div>
+        <div class="ipick" id="theme-pick"><button type="button" data-theme="" data-label="Navy (default)" aria-pressed="${!p.theme}" title="Navy (default)" aria-label="Navy (default)"><span class="sw" style="background:#1d4e7a"></span></button>${INKS.map(i => `<button type="button" data-theme="${i.k}" data-label="${i.label}" aria-pressed="${p.theme === i.k}" title="${i.label}" aria-label="${i.label}"><span class="sw" style="background:${i.c}"></span></button>`).join("")}</div>
+        <div class="ink-custom"><label class="wheel" title="Pick any colour"><input type="color" id="theme-wheel" value="${isHex(p.theme) ? p.theme : "#1d4e7a"}" aria-label="Pick any site colour"><span>Colour wheel</span></label>
+          <span class="ink-name" id="theme-name">${esc(isHex(p.theme) ? "Custom " + p.theme.toUpperCase() : (INKS.find(i => i.k === p.theme) || { label: "Navy (default)" }).label)}</span></div>
+        <span class="hint">Changes buttons, headings, your surname and the photo tint across the home page. You'll see it right away; Save keeps it. Each trip page still uses its stamp colour.</span></div>
+      <p class="err" id="form-err" hidden></p>
+      <div class="foot"><button type="button" class="btn" data-act="cancel">Cancel</button><button class="btn gold">Save</button></div>
+    </form>`);
+    let themeSel = p.theme || "";
+    $("#theme-pick").addEventListener("click", e => { const b = e.target.closest("[data-theme]"); if (!b) return; themeSel = b.dataset.theme; $("#theme-name").textContent = b.dataset.label; $("#theme-pick").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); applyTheme(themeSel); });
+    $("#theme-wheel").addEventListener("input", e => { themeSel = e.target.value.toLowerCase(); $("#theme-name").textContent = "Custom " + themeSel.toUpperCase(); $("#theme-pick").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", "false")); applyTheme(themeSel); });
+    $("#profile-form").addEventListener("submit", async e => {
+      e.preventDefault();
+      const data = { name: $("#p-name").value.trim(), tagline: $("#p-tag").value.trim(), bio: $("#p-bio").value.trim(), home: $("#p-home").value.trim(), handle: $("#p-handle").value.trim(), youtube: $("#p-yt").value.trim(), dob: $("#p-dob").value, theme: themeSel };
+      try { await saveProfile(data); state.profile = { ...state.profile, ...data }; closeModal(); toast("Profile saved"); } catch (err) { showErr(err); }
+    });
+  }
+  async function saveProfile(data) {
+    const ref = state.db.doc("site/profile");
+    if (state.profileExists) await ref.update(data); else { await ref.set({ ...state.profile, ...data }); state.profileExists = true; }
+  }
+
+  function confirmBox(title, body, okLabel, onOk) {
+    openModal(`<div class="sheet"><h2>${esc(title)}</h2><p style="margin:0;color:var(--muted)">${esc(body)}</p>
+      <p class="err" id="form-err" hidden></p>
+      <div class="foot">${onOk ? `<button class="btn" data-act="cancel">Cancel</button>` : ""}<button class="btn gold" id="ok">${esc(okLabel)}</button></div></div>`);
+    $("#ok").addEventListener("click", async () => { if (!onOk) return closeModal(); $("#ok").disabled = true; try { await onOk(); closeModal(); } catch (e) { showErr(e); $("#ok").disabled = false; } });
+  }
+
+  // ---------- uploads ----------
+  async function shrink(file, max = 2400) {
+    try {
+      const bmp = await createImageBitmap(file, { imageOrientation: "from-image" });
+      const scale = Math.min(1, max / Math.max(bmp.width, bmp.height));
+      if (scale === 1 && file.size < 3e6) return file;
+      const c = document.createElement("canvas");
+      c.width = Math.round(bmp.width * scale); c.height = Math.round(bmp.height * scale);
+      c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+      return await new Promise(r => c.toBlob(b => r(b || file), "image/jpeg", 0.86));
+    } catch { return file; }
+  }
+  const why = e => e?.code === "unsupported_type" ? " (format not supported, try JPG or PNG)" : e?.code === "too_large" ? " (too large)" : "";
+  async function uploadFiles(files, pid) {
+    const list = [...files].filter(f => f.type.startsWith("image/") || /\.(heic|heif)$/i.test(f.name));
+    if (!list.length || !state.assets) return;
+    state.uploading = { done: 0, total: list.length }; render();
+    const failed = [];
+    for (const f of list) {
+      try { const res = await state.assets.upload(await shrink(f)); await state.db.collection("photos").add({ placeId: pid, assetId: res.id, createdAt: Date.now() }); }
+      catch (e) { failed.push(f.name + why(e)); }
+      state.uploading.done++; render();
+    }
+    state.uploading = null; render();
+    if (list.length > failed.length) toast(plural(list.length - failed.length, "photo") + " added");
+    if (failed.length) confirmBox("Some photos didn't upload", failed.join(", "), "OK");
+  }
+  async function uploadAvatar(file) {
+    if (!file || !state.assets) return;
+    document.querySelectorAll('[data-act="avatar"]').forEach(b => { b.disabled = true; b.textContent = "Uploading…"; });
+    try {
+      const res = await state.assets.upload(await shrink(file, 1600));
+      const old = state.profile.photoAssetId;
+      await saveProfile({ photoAssetId: res.id });
+      if (old) state.assets.delete(old).catch(() => {});
+      const av = document.querySelector("#modal .av"); if (av) av.outerHTML = `<img class="av" src="${src(res.id)}" alt="">`;
+      document.querySelectorAll('#modal [data-act="avatar"]').forEach(b => { b.disabled = false; b.textContent = "Change photo"; });
+    } catch (e) { render(); confirmBox("Photo didn't upload", (file.name || "Photo") + why(e), "OK"); }
+  }
+
+  async function uploadBg(file) {
+    if (!file || !state.assets) return;
+    document.querySelectorAll('[data-act="bg"]').forEach(b => { b.disabled = true; b.textContent = "Uploading…"; });
+    try {
+      const res = await state.assets.upload(await shrink(file, 2800));
+      const old = state.profile.bgAssetId;
+      await saveProfile({ bgAssetId: res.id });
+      if (old) state.assets.delete(old).catch(() => {});
+      if ($("#modal")) profileForm();
+    } catch (e) { render(); confirmBox("Photo didn't upload", (file.name || "Photo") + why(e), "OK"); }
+  }
+  async function removeBg() {
+    const old = state.profile.bgAssetId; if (!old) return;
+    try { await saveProfile({ bgAssetId: null }); state.assets?.delete(old).catch(() => {}); if ($("#modal")) profileForm(); }
+    catch (e) { showErr(e); }
+  }
+
+  async function uploadBanner(file, pid) {
+    const place = state.places.find(p => p.id === pid);
+    if (!file || !place || !state.assets) return;
+    document.querySelectorAll('[data-act="banner"]').forEach(b => { b.disabled = true; b.textContent = "Uploading…"; });
+    try {
+      const res = await state.assets.upload(await shrink(file, 2800));
+      const old = place.bannerAssetId;
+      await state.db.doc("places/" + pid).update({ bannerAssetId: res.id });
+      if (old) state.assets.delete(old).catch(() => {});
+    } catch (e) { render(); confirmBox("Photo didn't upload", (file.name || "Photo") + why(e), "OK"); }
+  }
+  async function removeBanner(pid) {
+    const place = state.places.find(p => p.id === pid); const old = place?.bannerAssetId; if (!old) return;
+    try { await state.db.doc("places/" + pid).update({ bannerAssetId: null }); state.assets?.delete(old).catch(() => {}); } catch {}
+  }
+
+  // ---------- events ----------
+  document.addEventListener("click", e => {
+    const t = e.target.closest("[data-act]"); if (!t) return;
+    const act = t.dataset.act;
+    const pid = t.dataset.pid || (lb ? lb.list[lb.index]?.placeId : placeId());
+    const place = state.places.find(p => p.id === pid);
+    switch (act) {
+      case "route-play": flyRoute(); break;
+      case "flip": $("#pp-flip")?.classList.toggle("flipped"); break;
+      case "surprise": surprise(); break;
+      case "goto": { const el = document.getElementById(t.dataset.to); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + scrollY - (t.dataset.to === "top" ? 0 : 64), behavior: reduced() ? "auto" : "smooth" }); break; }
+      case "jump": $("#stamps")?.scrollIntoView({ behavior: reduced() ? "auto" : "smooth" }); break;
+      case "edit-profile": profileForm(); break;
+      case "avatar": $("#avatar-in").value = ""; $("#avatar-in").click(); break;
+      case "bg": $("#bg-in").value = ""; $("#bg-in").click(); break;
+      case "bg-remove": removeBg(); break;
+      case "banner": $("#banner-in").value = ""; $("#banner-in").click(); break;
+      case "banner-remove": removeBanner(placeId()); break;
+      case "new-place": placeForm(null); break;
+      case "edit-place": place && placeForm(place); break;
+      case "cancel": closeModal(); break;
+      case "upload": $("#file-in").value = ""; $("#file-in").click(); break;
+      case "filter": state.filter = t.dataset.v; render(); break;
+      case "vprev": case "vnext": { const n = photosOf(place.id).length; state.view = (state.view + (act === "vnext" ? 1 : -1) + n) % n; render(); $("#reel .on")?.scrollIntoView({ block: "nearest", inline: "center" }); break; }
+      case "vpick": state.view = +t.dataset.i; render(); break;
+      case "full": openLB(photosOf(place.id), state.view); break;
+      case "open-recent": openLB([...state.photos].sort((a, b) => byTime(b, a)).slice(0, 18), +t.dataset.i); break;
+      case "play-place": openLB(photosOf(t.dataset.pid), 0, true); break;
+      case "play-all": openLB(tripOrder().flatMap(p => photosOf(p.id)), 0, true); break;
+      case "toggle-play": lb.playing = !lb.playing; renderLightbox(); break;
+      case "jumpto": lb.index = +t.dataset.i; renderLightbox(); break;
+      case "close": closeLB(); break;
+      case "prev": step(-1); break;
+      case "next": step(1); break;
+      case "cover": { const ph = lb.list[lb.index]; state.db.doc("places/" + ph.placeId).update({ coverAssetId: ph.assetId }).catch(() => {}); break; }
+      case "del-photo": {
+        const ph = lb.list[lb.index]; lb.playing = false; renderLightbox();
+        confirmBox("Delete this photo?", "It will be removed for good.", "Delete photo", async () => {
+          await state.db.doc("photos/" + ph.id).delete(); state.assets?.delete(ph.assetId).catch(() => {});
+        }); break; }
+      case "del-place": {
+        if (!place) break; const n = photosOf(place.id).length;
+        confirmBox(`Delete ${place.name}?`, n ? `This also deletes its ${plural(n, "photo")}.` : "This stamp has no photos.", "Delete stamp", async () => {
+          for (const ph of photosOf(place.id)) { await state.db.doc("photos/" + ph.id).delete(); state.assets?.delete(ph.assetId).catch(() => {}); }
+          await state.db.doc("places/" + place.id).delete(); location.hash = "";
+        }); break; }
+    }
+  });
+  document.addEventListener("click", e => { const g = e.target.closest?.("#routebox .node"); if (g) location.hash = encodeURIComponent(g.dataset.pid); });
+  document.addEventListener("keydown", e => { const g = e.target.closest?.("#routebox .node"); if (g && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); location.hash = encodeURIComponent(g.dataset.pid); } });
+  document.addEventListener("mouseover", e => { const g = e.target.closest?.("#routebox .node"); if (g) showRouteTip(g); else if (!e.target.closest?.("#rtip")) hideRouteTip(); });
+  document.addEventListener("focusin", e => { const g = e.target.closest?.("#routebox .node"); if (g) showRouteTip(g); else hideRouteTip(); });
+  document.addEventListener("click", e => {
+    const a = e.target.closest?.(".stamps a.stamp"); if (!a || e.metaKey || e.ctrlKey || reduced()) return;
+    e.preventDefault(); a.classList.add("press"); setTimeout(() => { location.hash = a.getAttribute("href").slice(1); }, 260);
+  });
+  document.addEventListener("pointermove", e => {
+    const a = e.target.closest?.(".stamps .stamp"); if (!a || reduced() || e.pointerType !== "mouse") return;
+    const r = a.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+    a.style.setProperty("--tx", (x * 18).toFixed(1) + "deg"); a.style.setProperty("--ty", (-y * 18).toFixed(1) + "deg");
+  });
+  document.addEventListener("pointerout", e => { const a = e.target.closest?.(".stamps .stamp"); if (a && !a.contains(e.relatedTarget)) { a.style.removeProperty("--tx"); a.style.removeProperty("--ty"); } });
+  document.addEventListener("change", e => { if (e.target.id === "sort-sel") { state.sort = e.target.value; try { localStorage.setItem("ss-sort", state.sort); } catch {} render(); } });
+  // drag the film strips with a mouse
+  let drag = null;
+  document.addEventListener("pointerdown", e => { const r = e.target.closest?.(".reel"); if (!r || e.pointerType !== "mouse") return; drag = { r, x: e.clientX, s: r.scrollLeft, moved: false }; });
+  document.addEventListener("pointermove", e => { if (!drag) return; const dx = e.clientX - drag.x; if (Math.abs(dx) > 4) { drag.moved = true; drag.r.classList.add("dragging"); } drag.r.scrollLeft = drag.s - dx; });
+  document.addEventListener("pointerup", () => { if (!drag) return; const d = drag; setTimeout(() => d.r.classList.remove("dragging")); drag = d.moved ? { ...d, eat: true } : null; setTimeout(() => { drag = null; }); });
+  document.addEventListener("click", e => { if (drag?.eat && e.target.closest?.(".reel")) { e.stopPropagation(); e.preventDefault(); drag = null; } }, true);
+  // zoom in the photo viewer: double-click / double-tap, then move to pan
+  document.addEventListener("dblclick", e => { const img = e.target.closest?.(".lb .stage img"); if (!img) return; img.classList.toggle("zoom"); setOrigin(img, e); });
+  let lastTap = 0;
+  document.addEventListener("touchend", e => { const img = e.target.closest?.(".lb .stage img"); if (!img) return; const now = Date.now(); if (now - lastTap < 300) { img.classList.toggle("zoom"); setOrigin(img, e.changedTouches[0]); } lastTap = now; }, { passive: true });
+  document.addEventListener("mousemove", e => { const img = e.target.closest?.(".lb .stage img.zoom"); if (img) setOrigin(img, e); });
+  function setOrigin(img, pt) { const r = img.getBoundingClientRect(); img.style.transformOrigin = `${((pt.clientX - r.left) / r.width * 100).toFixed(1)}% ${((pt.clientY - r.top) / r.height * 100).toFixed(1)}%`; }
+  // section nav + back-to-top appear after the passport scrolls away
+  let navTick = false;
+  window.addEventListener("scroll", () => {
+    if (navTick) return; navTick = true; hideRouteTip();
+    requestAnimationFrame(() => {
+      navTick = false;
+      const nav = $("#secnav"), top = $("#totop"), hero = $("#top"); if (!nav || !hero) return;
+      const past = hero.getBoundingClientRect().bottom < 40;
+      nav.classList.toggle("show", past); if (top) top.hidden = !past;
+      let cur = "top"; ["route-sec", "stamps", "recent-sec"].forEach(id => { const el = document.getElementById(id); if (el && el.getBoundingClientRect().top < 140) cur = id; });
+      nav.querySelectorAll("[data-to]").forEach(b => b.classList.toggle("on", b.dataset.to === cur));
+    });
+  }, { passive: true });
+  document.addEventListener("input", e => {
+    if (e.target.id !== "search") return;
+    state.q = e.target.value; const pos = e.target.selectionStart; render();
+    const s = $("#search"); if (s) { s.focus(); s.setSelectionRange(pos, pos); }
+  });
+  $("#file-in").addEventListener("change", e => { const pid = placeId(); if (pid) uploadFiles(e.target.files, pid); });
+  $("#avatar-in").addEventListener("change", e => uploadAvatar(e.target.files[0]));
+  $("#bg-in").addEventListener("change", e => uploadBg(e.target.files[0]));
+  $("#banner-in").addEventListener("change", e => { const pid = placeId(); if (pid) uploadBanner(e.target.files[0], pid); });
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") { if ($("#modal")) closeModal(); else if (lb) closeLB(); return; }
+    if ($("#modal") || e.target.matches?.("input, textarea")) return;
+    if (lb) { if (e.key === "ArrowRight") step(1); if (e.key === "ArrowLeft") step(-1); if (e.key === " ") { e.preventDefault(); lb.playing = !lb.playing; renderLightbox(); } return; }
+    const place = state.places.find(p => p.id === placeId());
+    if (place && (e.key === "ArrowRight" || e.key === "ArrowLeft")) { const n = photosOf(place.id).length; if (n) { state.view = (state.view + (e.key === "ArrowRight" ? 1 : -1) + n) % n; render(); } }
+  });
+  document.addEventListener("keydown", e => {
+    if ($("#modal") || lb || e.metaKey || e.ctrlKey || e.altKey || e.target.matches?.("input, textarea, select")) return;
+    const home = !placeId() || !state.places.find(p => p.id === placeId());
+    if (e.key === "/" && $("#search")) { e.preventDefault(); $("#search").focus(); $("#search").scrollIntoView({ block: "center", behavior: reduced() ? "auto" : "smooth" }); }
+    else if (e.key === "?") showHelp();
+    else if ((e.key === "s" || e.key === "S") && home && state.places.length > 1) surprise();
+    else if ((e.key === "r" || e.key === "R") && $("#route-play")) { $("#routebox").scrollIntoView({ block: "center", behavior: reduced() ? "auto" : "smooth" }); flyRoute(); }
+    else if ((e.key === "f" || e.key === "F") && $("#pp-flip")) $("#pp-flip").classList.toggle("flipped");
+    else if ((e.key === "n" || e.key === "N") && state.canEdit) placeForm(null);
+  });
+  let sx = null;
+  document.addEventListener("touchstart", e => { if (e.target.closest?.(".lb .stage, .screen")) sx = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener("touchend", e => {
+    if (sx == null) return; const dx = e.changedTouches[0].clientX - sx; sx = null; if (Math.abs(dx) < 50) return;
+    if (lb) return step(dx < 0 ? 1 : -1);
+    const place = state.places.find(p => p.id === placeId()); if (!place) return;
+    const n = photosOf(place.id).length; state.view = (state.view + (dx < 0 ? 1 : -1) + n) % n; render();
+  });
+  window.addEventListener("hashchange", () => { closeLB(); state.view = 0; window.scrollTo(0, 0); render(); });
+
+  // ---------- boot ----------
+  async function boot() {
+    if (!window.claude?.use) { state.error = "This page couldn't start. Refresh to try again."; render(); return; }
+    const fail = () => { clearTimeout(timer); if (!state.loaded) { state.error = "Couldn't load the travel data. Refresh the page to try again."; render(); } };
+    const timer = setTimeout(fail, 10000);
+    const [db, user, assets] = await Promise.all([claude.use("db"), claude.use("user"), claude.use("assets")]);
+    if (!db) { clearTimeout(timer); state.error = "Couldn't load the travel data. Refresh to try again."; render(); return; }
+    state.db = db; state.assets = assets;
+    state.canEdit = !!assets && ((await user?.canEdit?.()) ?? false);
+    const got = { prof: false, places: false, photos: false };
+    const ready = () => { if (got.prof && got.places && got.photos) { clearTimeout(timer); state.loaded = true; render(); } };
+    db.doc("site/profile").onSnapshot(s => { state.profileExists = s.exists; state.profile = s.data() || {}; got.prof = true; ready(); }, fail);
+    db.collection("places").onSnapshot(s => { state.places = s.docs.map(d => ({ id: d.id, ...d.data() })); got.places = true; ready(); }, fail);
+    db.collection("photos").onSnapshot(s => { state.photos = s.docs.map(d => ({ id: d.id, ...d.data() })); got.photos = true; ready(); }, fail);
+  }
+  boot();
+})();
+</script>
+
+</body>
+</html>
