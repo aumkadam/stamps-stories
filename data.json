@@ -10,6 +10,26 @@
     "youtube": "",
     "theme": ""
   },
-  "places": {},
+  "places": {
+    "mvysntv63xelqn": {
+      "name": "New York City",
+      "code": "NYC",
+      "country": "USA",
+      "when": "October 2025",
+      "note": "",
+      "months": [
+        "Oct"
+      ],
+      "vibes": [
+        "city",
+        "food",
+        "nightlife"
+      ],
+      "motif": "",
+      "ink": "",
+      "shape": "",
+      "createdAt": 1793595853554
+    }
+  },
   "photos": {}
 }
