@@ -46,7 +46,7 @@
         "nightlife"
       ],
       "motif": "",
-      "ink": "",
+      "ink": "olive",
       "shape": "",
       "createdAt": 1793597493852
     }
@@ -416,6 +416,11 @@
       "placeId": "mvysntv63xelqn",
       "assetId": "mvytnqk4j4wq8m.jpg",
       "createdAt": 1793597531559
+    },
+    "mvytnv2rq9nzrt": {
+      "placeId": "mvysntv63xelqn",
+      "assetId": "mvytnsseeoy5e0.jpg",
+      "createdAt": 1793597534739
     }
   }
 }
